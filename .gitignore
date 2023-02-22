@@ -1,5 +1,6 @@
 .env
 .vscode
+/tmp
 
 # Binaries for programs and plugins
 *.exe
