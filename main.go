@@ -1,18 +1,14 @@
 package main
 
 import (
-	"log"
+	"fmt"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/logger"
-	"github.com/joho/godotenv"
+	"github.com/nicodeheza/peersEat/config"
 )
 
 func main() {
-	err := godotenv.Load()
-  if err != nil {
-    log.Fatal("Error loading .env file")
-  }
     app := fiber.New()
 	app.Use(logger.New())
 
@@ -20,5 +16,10 @@ func main() {
         return c.SendString("Hello, World!!!!")
     })
 
-    app.Listen(":3000")
+	port:= config.GetEnv("PORT")
+	if "" == port{
+		port= "3001"
+	}
+	port = fmt.Sprintf(":%v", port) 
+    app.Listen(port)
 }
