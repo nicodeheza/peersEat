@@ -12,6 +12,8 @@ func main() {
     app := fiber.New()
 	app.Use(logger.New())
 
+	config.ConnectDB()
+
     app.Get("/", func(c *fiber.Ctx) error {
         return c.SendString("Hello, World!!!!")
     })
