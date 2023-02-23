@@ -10,7 +10,10 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-func ConnectDB() *mongo.Client {
+var DB *mongo.Client= nil
+
+func ConnectDB(){
+	if DB !=nil {return}
 	client, err := mongo.NewClient(options.Client().ApplyURI(GetEnv("MONGO_URI")))
 	if err != nil{ log.Fatal(err)}
 
@@ -24,10 +27,8 @@ func ConnectDB() *mongo.Client {
 	if err != nil{log.Fatal((err))}
 
 	fmt.Println("Connected to MongoDB")
-	return client
+	DB= client
 }
-
-var DB *mongo.Client = ConnectDB()
 
 func GetCollection (client *mongo.Client, collectionName string) *mongo.Collection{
 	collection := client.Database("peersEatDB").Collection(collectionName)
