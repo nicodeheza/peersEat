@@ -30,7 +30,7 @@ func ConnectDB(){
 	DB= client
 }
 
-func GetCollection (client *mongo.Client, collectionName string) *mongo.Collection{
-	collection := client.Database("peersEatDB").Collection(collectionName)
-	return collection
+func GetDatabase() *mongo.Database{
+	database := DB.Database("peersEatDB")
+	return database
 }
