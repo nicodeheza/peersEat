@@ -1,29 +1,28 @@
 package peer_service
 
 import (
-	"fmt"
+	"os"
 	"strconv"
 	"strings"
 
-	"github.com/nicodeheza/peersEat/config"
 	"github.com/nicodeheza/peersEat/models"
 	peer_repository "github.com/nicodeheza/peersEat/repositories/peerRepository"
 )
 
 func InitPeer() {
-	centerSrt:= config.GetEnv("CENTER")
+	centerSrt:= os.Getenv("CENTER")
 	centerSlice := strings.Split(centerSrt, ",")
 	long, _ := strconv.ParseFloat(centerSlice[0], 64)
 	lat, _ := strconv.ParseFloat(centerSlice[1], 64)
 
 	selfPeer := models.Peer{
-		Url: config.GetEnv("HOST"),
+		Url: os.Getenv("HOST"),
 		Center: models.Center{Long: long , Lat: lat},
-		City: config.GetEnv("CITY"),
-		Country: config.GetEnv("COUNTRY"),
+		City: os.Getenv("CITY"),
+		Country: os.Getenv("COUNTRY"),
 	}
 
-	fmt.Println(selfPeer)
-
 	peer_repository.Insert(selfPeer)
+
+	// Todo: create new peers endpoint and add here call 
 }

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"os"
 	"time"
 
 	"go.mongodb.org/mongo-driver/mongo"
@@ -14,7 +15,7 @@ var DB *mongo.Client= nil
 
 func ConnectDB(){
 	if DB !=nil {return}
-	client, err := mongo.NewClient(options.Client().ApplyURI(GetEnv("MONGO_URI")))
+	client, err := mongo.NewClient(options.Client().ApplyURI(os.Getenv("MONGO_URI")))
 	if err != nil{ log.Fatal(err)}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)

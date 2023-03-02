@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/logger"
@@ -11,6 +12,7 @@ import (
 )
 
 func main() {
+	config.LoadEnv()
     app := fiber.New()
 	app.Use(logger.New())
 
@@ -22,7 +24,7 @@ func main() {
         return c.SendString("Hello, World!!!!")
     })
 
-	port:= config.GetEnv("PORT")
+	port:= os.Getenv("PORT")
 	if "" == port{
 		port= "3001"
 	}
