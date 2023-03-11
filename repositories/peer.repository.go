@@ -80,7 +80,7 @@ func (p PeerRepository) GetSelf() (models.Peer, error) {
 func (p PeerRepository) Update(peer models.Peer, fields []string ) error {
 	filter := bson.D{{Key: "_id",  Value: peer.Id}}
 
-	updateDatan := bson.D{}
+	updateData := bson.D{}
 	val:= reflect.ValueOf(peer)
 
 	for _, field := range fields{
@@ -89,10 +89,10 @@ func (p PeerRepository) Update(peer models.Peer, fields []string ) error {
 			message := fmt.Sprintf("field %v not exist in peer struct", field)
 			return errors.New(message)
 		}
-		updateDatan = append(updateDatan, bson.E{Key: field,  Value: f})
+		updateData = append(updateData, bson.E{Key: field,  Value: f})
 	}
 
-	update:= bson.D{{Key: "$set", Value: updateDatan}}
+	update:= bson.D{{Key: "$set", Value: updateData}}
 
 	_, err := p.coll.UpdateOne(context.Background(), filter, update)
 
