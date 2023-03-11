@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"reflect"
+	"strings"
 
 	"github.com/nicodeheza/peersEat/models"
 	"go.mongodb.org/mongo-driver/bson"
@@ -85,11 +86,11 @@ func (p PeerRepository) Update(peer models.Peer, fields []string ) error {
 
 	for _, field := range fields{
 		f:= reflect.Indirect(val).FieldByName(field)
-		if  f.IsZero(){
+		if  f == (reflect.Value{}){
 			message := fmt.Sprintf("field %v not exist in peer struct", field)
 			return errors.New(message)
 		}
-		updateData = append(updateData, bson.E{Key: field,  Value: f})
+		updateData = append(updateData, bson.E{Key:strings.ToLower(field),  Value: f.Interface()})
 	}
 
 	update:= bson.D{{Key: "$set", Value: updateData}}
