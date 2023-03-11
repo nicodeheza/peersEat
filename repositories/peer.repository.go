@@ -12,7 +12,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type PeerRepositoryI interface{
@@ -101,22 +100,26 @@ func (p PeerRepository) Update(peer models.Peer, fields []string ) error {
 	return nil
 }
 
+
 func (p PeerRepository) GetAllUrls(excludes []string) ([]string, error){
-	opts := options.Find().SetProjection(bson.D{{Key: "url", Value: 1}})
 	filter := bson.D{}
 
 	for _, excludeUrl := range excludes{
 		filter = append(filter, bson.E{Key: "url" , Value: bson.D{{Key: "$ne", Value: excludeUrl}}})
 	}
 
-	cursor, err := p.coll.Find(context.Background(), filter, opts)
+	cursor, err := p.coll.Find(context.Background(), filter)
 	if err != nil{
 		return nil, err
 	}
 
 	var result []string
-	if err = cursor.All(context.Background(), &result); err !=nil{
-		return nil, err
+	for cursor.Next(context.Background()){
+		var peer models.Peer
+		if err := cursor.Decode(&peer); err != nil{
+			return result, err
+		}
+		result= append(result, peer.Url)
 	}
 
 	return result, nil
