@@ -8,7 +8,8 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/nicodeheza/peersEat/config"
 	"github.com/nicodeheza/peersEat/models"
-	peer_service "github.com/nicodeheza/peersEat/services/peerService"
+	"github.com/nicodeheza/peersEat/modules"
+	"github.com/nicodeheza/peersEat/routes"
 )
 
 func main() {
@@ -16,10 +17,12 @@ func main() {
     app := fiber.New()
 	app.Use(logger.New())
 
-	config.ConnectDB()
-	models.InitModels()
-	peer_service.InitPeer()
+	config.ConnectDB(os.Getenv("MONGO_URI"))
+	models.InitModels("peersEatDB")
+	appModule := modules.InitApp()
+	appModule.Peer.Service.InitPeer()
 
+	routes.Register(app, appModule)
     app.Get("/", func(c *fiber.Ctx) error {
         return c.SendString("Hello, World!!!!")
     })

@@ -1,5 +1,5 @@
 package models
 
-func InitModels() {
-	InitPeerModel()
+func InitModels(databaseName string) {
+	InitPeerModel(databaseName)
 }

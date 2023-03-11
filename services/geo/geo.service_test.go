@@ -35,7 +35,7 @@ func TestGetCoorDistance(t *testing.T) {
 	}
 
 	for _, test:= range tests{
-		result :=GetCoorDistance(test.Coor1, test.Coor2)
+		result := GetCoorDistance(test.Coor1, test.Coor2)
 		dif := math.Abs(result - test.result)
 		if dif > 0.001{
 			t.Errorf("expect %f but gets %f for %f, %f - %f, %f", 
