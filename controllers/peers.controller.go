@@ -18,10 +18,11 @@ type PeerControllerI interface{
 
 type PeerController struct{
 	service services.PeerServiceI
+	validate validations.ValidateI
 }
 
-func NewPeerController(service services.PeerServiceI)*PeerController{
-	return &PeerController{service}
+func NewPeerController(service services.PeerServiceI, validate validations.ValidateI)*PeerController{
+	return &PeerController{service, validate}
 }
 
 
@@ -38,7 +39,7 @@ func (p PeerController) PeerPresentation(c *fiber.Ctx) error {
 	
 	newPeer := body.NewPeer
 
-	errors := validations.ValidatePeer(newPeer)
+	errors := p.validate.ValidatePeer(newPeer)
 	if errors != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(errors)
 	}

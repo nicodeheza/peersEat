@@ -6,6 +6,8 @@ import (
 	"github.com/nicodeheza/peersEat/models"
 )
 
+// do it injectable
+
 // https://gist.github.com/hotdang-ca/6c1ee75c48e515aec5bc6db6e3265e49
 func GetCoorDistance(coor1 models.Center, coor2 models.Center) float64{
 	const R= 6371e3
