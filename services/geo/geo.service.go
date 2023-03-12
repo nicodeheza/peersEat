@@ -6,10 +6,20 @@ import (
 	"github.com/nicodeheza/peersEat/models"
 )
 
-// do it injectable
+type GeoService struct{}
+type GeoServiceI interface{
+	GetCoorDistance(coor1 models.Center, coor2 models.Center) float64
+	IsSameCoor( coor1 models.Center, coor2 models.Center) bool
+	IsInInfluenceArea(selfPeer models.Peer, peer models.Peer) bool
+	IsInDeliveryArea(selfPeer models.Peer, peer models.Peer) bool
+}
+
+func NewGeo() *GeoService{
+	return &GeoService{}
+}
 
 // https://gist.github.com/hotdang-ca/6c1ee75c48e515aec5bc6db6e3265e49
-func GetCoorDistance(coor1 models.Center, coor2 models.Center) float64{
+func (g GeoService) GetCoorDistance(coor1 models.Center, coor2 models.Center) float64{
 	const R= 6371e3
 	radlat1 := float64(math.Pi * coor1.Lat / 180)
 	radlat2 := float64(math.Pi * coor2.Lat / 180)
@@ -29,7 +39,7 @@ func GetCoorDistance(coor1 models.Center, coor2 models.Center) float64{
 	return dist * 1.609344
 }
 
-func IsSameCoor( coor1 models.Center, coor2 models.Center) bool {
+func (g GeoService) IsSameCoor( coor1 models.Center, coor2 models.Center) bool {
 	if coor1.Lat == coor2.Lat &&
 	 coor1.Long == coor2.Long{
 		return true
@@ -38,12 +48,12 @@ func IsSameCoor( coor1 models.Center, coor2 models.Center) bool {
 	return false
 }
 
-func IsInInfluenceArea(selfPeer models.Peer, peer models.Peer) bool{
-	if IsSameCoor(selfPeer.Center, peer.Center){return true}
+func (g GeoService) IsInInfluenceArea(selfPeer models.Peer, peer models.Peer) bool{
+	if g.IsSameCoor(selfPeer.Center, peer.Center){return true}
 
 	if selfPeer.InfluenceRadius == 0 {return false}
 
-	peerDis := GetCoorDistance(peer.Center, selfPeer.Center)
+	peerDis := g.GetCoorDistance(peer.Center, selfPeer.Center)
 	peerDis = math.Abs(peerDis) 
 
 	influenceSum := selfPeer.InfluenceRadius + peer.InfluenceRadius
@@ -52,12 +62,12 @@ func IsInInfluenceArea(selfPeer models.Peer, peer models.Peer) bool{
 	return false
 }
 
-func IsInDeliveryArea(selfPeer models.Peer, peer models.Peer) bool{
-	if IsSameCoor(selfPeer.Center, peer.Center){return true}
+func (g GeoService) IsInDeliveryArea(selfPeer models.Peer, peer models.Peer) bool{
+	if g.IsSameCoor(selfPeer.Center, peer.Center){return true}
 
 	if selfPeer.DeliveryRadius == 0 {return false}
 
-	peerDis := GetCoorDistance(peer.Center, selfPeer.Center)
+	peerDis := g.GetCoorDistance(peer.Center, selfPeer.Center)
 	peerDis = math.Abs(peerDis) 
 
 	deliverySum := selfPeer.DeliveryRadius + peer.DeliveryRadius

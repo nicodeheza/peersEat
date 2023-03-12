@@ -15,7 +15,7 @@ type GetCoorDistanceTests struct {
 }
 
 func TestGetCoorDistance(t *testing.T) {
-
+	g:= NewGeo()
 	tests:= []GetCoorDistanceTests{
 		{
 			models.Center{Long: -36.0233352, Lat: -61.2301026}, 
@@ -35,7 +35,7 @@ func TestGetCoorDistance(t *testing.T) {
 	}
 
 	for _, test:= range tests{
-		result := GetCoorDistance(test.Coor1, test.Coor2)
+		result := g.GetCoorDistance(test.Coor1, test.Coor2)
 		dif := math.Abs(result - test.result)
 		if dif > 0.001{
 			t.Errorf("expect %f but gets %f for %f, %f - %f, %f", 
@@ -52,6 +52,7 @@ type IsSameCoorTest struct{
 }
 
 func TestIsSameCoor(t *testing.T){
+	g:= NewGeo()
 	tests := []IsSameCoorTest{
 			{
 				models.Center{Long: -36.0233352, Lat: -61.2301026}, 
@@ -67,7 +68,7 @@ func TestIsSameCoor(t *testing.T){
 		}
 	for _, test := range tests{
 
-		result := IsSameCoor(test.Coor1, test.Coor2)
+		result := g.IsSameCoor(test.Coor1, test.Coor2)
 
 		if result != test.result{
 			t.Errorf("expect %t, but gets %t on (%v, %v)", 
@@ -84,6 +85,7 @@ type IsInInfluenceAreaTest struct{
 }
 
 func TestIsInInfluenceArea(t *testing.T){
+	g:= NewGeo()
 
 	basePeer := models.Peer{
 		Url: "http://test.com",
@@ -128,7 +130,7 @@ func TestIsInInfluenceArea(t *testing.T){
 	}
 
 	for _, test:= range tests{
-		result := IsInInfluenceArea(test.SelfPeer, test.Peer)
+		result := g.IsInInfluenceArea(test.SelfPeer, test.Peer)
 
 		if result != test.result{
 			t.Errorf("expect %t but gets %t for (%v, %v)", test.result, result, test.SelfPeer, test.Peer)
@@ -137,6 +139,7 @@ func TestIsInInfluenceArea(t *testing.T){
 }
 
 func TestIsInDeliveryArea(t *testing.T){
+	g:= NewGeo()
 
 	basePeer := models.Peer{
 		Url: "http://test.com",
@@ -181,7 +184,7 @@ func TestIsInDeliveryArea(t *testing.T){
 	}
 
 	for _, test:= range tests{
-		result := IsInDeliveryArea(test.SelfPeer, test.Peer)
+		result := g.IsInDeliveryArea(test.SelfPeer, test.Peer)
 
 		if result != test.result{
 			t.Errorf("expect %t but gets %t for (%v, %v)", test.result, result, test.SelfPeer, test.Peer)

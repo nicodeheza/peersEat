@@ -27,10 +27,11 @@ type PeerServiceI interface{
 
 type PeerService struct{
 	repo repositories.PeerRepositoryI
+	geo geo.GeoServiceI
 }
 
-func NewPeerService(repository repositories.PeerRepositoryI) *PeerService{
- return &PeerService{repository}
+func NewPeerService(repository repositories.PeerRepositoryI, geo geo.GeoServiceI) *PeerService{
+ return &PeerService{repository, geo}
 }
 
 func (p PeerService) InitPeer() {
@@ -64,12 +65,12 @@ func (p PeerService) AddNewPeer(newPeer models.Peer) error {
 
 	// do it concurrent?
 	updatedFields := []string{}
-	if geo.IsInInfluenceArea(selfPeer, newPeer){
+	if p.geo.IsInInfluenceArea(selfPeer, newPeer){
 		selfPeer.InAreaPeers = append(selfPeer.InAreaPeers, id )
 		updatedFields = append(updatedFields, "InAreaPeers")
 	}
 
-	if geo.IsInDeliveryArea(selfPeer, newPeer){
+	if p.geo.IsInDeliveryArea(selfPeer, newPeer){
 		selfPeer.InDeliveryAreaPeers = append(selfPeer.InAreaPeers, id )
 		updatedFields= append(updatedFields, "InDeliveryAreaPeers")
 	}
