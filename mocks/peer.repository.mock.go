@@ -23,7 +23,7 @@ func NewPeerRepository() *PeerRepositoryMock{
 	return &PeerRepositoryMock{}
 }
 
-func (p PeerRepositoryMock) CleatCalls(){
+func (p *PeerRepositoryMock) CleatCalls(){
 	p.InsertCalls = nil
 	p.GetByIdCalls = nil
 	p.UpdateCalls = nil
@@ -31,16 +31,15 @@ func (p PeerRepositoryMock) CleatCalls(){
 	p.GetAllCalls= nil
 }
 
-func (p PeerRepositoryMock) Insert(peer models.Peer) (id primitive.ObjectID ,  err error) {
+func (p *PeerRepositoryMock) Insert(peer models.Peer) (id primitive.ObjectID ,  err error) {
 	p.InsertCalls= append(p.InsertCalls, peer)
-
 	if peer.Url == "error"{
 		return primitive.ObjectID{}, errors.New("test error")
 	}
 	return primitive.NewObjectID(), nil
 }
 
-func (p PeerRepositoryMock) GetById(id  primitive.ObjectID)(models.Peer, error){
+func (p *PeerRepositoryMock) GetById(id  primitive.ObjectID)(models.Peer, error){
 	p.GetByIdCalls = append(p.GetByIdCalls, id)
 	return models.Peer{
 		Id: id,
@@ -53,7 +52,7 @@ func (p PeerRepositoryMock) GetById(id  primitive.ObjectID)(models.Peer, error){
 	}, nil
 }
 
-func (p PeerRepositoryMock) GetAll(excludesUrls []string) ([]models.Peer, error) {
+func (p *PeerRepositoryMock) GetAll(excludesUrls []string) ([]models.Peer, error) {
 	p.GetAllCalls= append(p.GetAllCalls, excludesUrls)
 	peer := models.Peer{
 		Id: primitive.NewObjectID(),
@@ -68,7 +67,7 @@ func (p PeerRepositoryMock) GetAll(excludesUrls []string) ([]models.Peer, error)
 	return []models.Peer{peer, peer, peer}, nil
 }
 
-func (p PeerRepositoryMock) GetSelf() (models.Peer, error) {
+func (p *PeerRepositoryMock) GetSelf() (models.Peer, error) {
 	center := strings.Split(os.Getenv("CENTER"), ",") 
 	long, err:= strconv.ParseFloat(center[0], 64)
 	lat, err:= strconv.ParseFloat(center[1], 64)
@@ -84,14 +83,14 @@ func (p PeerRepositoryMock) GetSelf() (models.Peer, error) {
 	}, nil
 } 
 
-func (p PeerRepositoryMock) Update(peer models.Peer, fields []string ) error {
+func (p *PeerRepositoryMock) Update(peer models.Peer, fields []string ) error {
 	p.UpdateCalls= append(p.UpdateCalls, 
 		struct{peer models.Peer; fields []string}{peer, fields})
 	return nil
 }
 
 
-func (p PeerRepositoryMock) GetAllUrls(excludes []string) ([]string, error){
+func (p *PeerRepositoryMock) GetAllUrls(excludes []string) ([]string, error){
 	
 	p.GetAllUrlsCalls= append(p.GetAllUrlsCalls, excludes)
 
