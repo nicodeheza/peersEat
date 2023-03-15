@@ -133,5 +133,55 @@ func TestAddNewPeer(t *testing.T){
 		}
 		repo.CleatCalls()
 	}
+}
+
+func TestGetSendMap(t *testing.T){
+	service, _ := initTest()
+
+	type GetSendMapArgs struct{
+		Urls []string
+		SendMap map[string][]string
+	}
+
+	map1:= make(map[string][]string)
+	map1["test1"] = nil
+	map2 := make(map[string][]string)
+	map2["test1"]=[]string{"test2"}
+	map2["test3"]=[]string{"test4"}
+
+	tests:=[]struct{
+		args GetSendMapArgs
+		result map[string][]string
+	}{
+		{
+		args: GetSendMapArgs{
+			Urls: []string{},
+			SendMap: make(map[string][]string),
+		},
+		result: make(map[string][]string),
+		},
+		{
+		args: GetSendMapArgs{
+			Urls: []string{"test1"},
+			SendMap: make(map[string][]string),
+		},
+		result: map1,
+		},
+		{
+			args: GetSendMapArgs{
+				Urls: []string{"test1", "test2", "test3" , "test4"},
+				SendMap: make(map[string][]string),
+			},
+			result: map2,
+		},
+	}
+
+	for _, test := range tests{
+		service.GetSendMap(test.args.Urls, test.args.SendMap)
+
+		if ! reflect.DeepEqual(test.args.SendMap, test.result){
+			t.Errorf("unexpected result.\n expected: %v\n got: %v", test.result, test.args.SendMap)
+		}
+	}
 
 }
