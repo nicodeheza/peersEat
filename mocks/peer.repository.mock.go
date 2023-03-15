@@ -99,7 +99,5 @@ func (p *PeerRepositoryMock) GetAllUrls(excludes []string) ([]string, error){
 	
 	p.GetAllUrlsCalls= append(p.GetAllUrlsCalls, excludes)
 
-	url:="http://test.com"
-
-	return []string{url, url, url}, nil
+	return []string{"test1", "test2", "test3", "test4"}, nil
 }

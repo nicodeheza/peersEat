@@ -185,3 +185,27 @@ func TestGetSendMap(t *testing.T){
 	}
 
 }
+
+func TestGetNewSendMap(t *testing.T){
+	service, repo := initTest()
+
+	sendMap := make(map[string][]string)
+	excludes := []string{"http://tests.com"}
+
+	service.GetNewSendMap(excludes, sendMap)
+
+	if len(repo.GetAllUrlsCalls) > 1{
+		t.Error("GetNewSendMap called more than one time")
+	}
+	if !reflect.DeepEqual(repo.GetAllUrlsCalls[0], excludes){
+		t.Errorf("GetAllUrls call with unexpected argument.\n expected: %v\n got: %v", excludes, repo.GetAllUrlsCalls[0])
+	}
+
+	expectMap:= make(map[string][]string)
+	expectMap["test1"]=[]string{"test2"}
+	expectMap["test3"]=[]string{"test4"}
+
+	if !reflect.DeepEqual(expectMap, sendMap){
+		t.Errorf("unexpected send map.\n expected: %v\n got: %v", expectMap, sendMap)
+	}
+}
