@@ -63,6 +63,10 @@ func (p PeerService) AddNewPeer(newPeer models.Peer) error {
 		return err
 	}
 
+	if newPeer.Country != selfPeer.Country || newPeer.City !=selfPeer.City{
+		return nil
+	}
+	
 	// do it concurrent?
 	updatedFields := []string{}
 	if p.geo.IsInInfluenceArea(selfPeer, newPeer){
@@ -71,7 +75,7 @@ func (p PeerService) AddNewPeer(newPeer models.Peer) error {
 	}
 
 	if p.geo.IsInDeliveryArea(selfPeer, newPeer){
-		selfPeer.InDeliveryAreaPeers = append(selfPeer.InAreaPeers, id )
+		selfPeer.InDeliveryAreaPeers = append(selfPeer.InDeliveryAreaPeers, id )
 		updatedFields= append(updatedFields, "InDeliveryAreaPeers")
 	}
 

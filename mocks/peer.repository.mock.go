@@ -5,17 +5,21 @@ import (
 	"os"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/nicodeheza/peersEat/models"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
+type ExpectUpdate struct{
+	Peer models.Peer
+	Fields []string
+}
+
 type PeerRepositoryMock struct{
 	InsertCalls []models.Peer
 	GetByIdCalls []primitive.ObjectID
 	GetAllCalls [][] string
-	UpdateCalls []struct{peer models.Peer; fields []string }
+	UpdateCalls []ExpectUpdate
 	GetAllUrlsCalls [][]string
 }
 
@@ -36,7 +40,7 @@ func (p *PeerRepositoryMock) Insert(peer models.Peer) (id primitive.ObjectID ,  
 	if peer.Url == "error"{
 		return primitive.ObjectID{}, errors.New("test error")
 	}
-	return primitive.NewObjectID(), nil
+	return primitive.NilObjectID, nil
 }
 
 func (p *PeerRepositoryMock) GetById(id  primitive.ObjectID)(models.Peer, error){
@@ -55,7 +59,7 @@ func (p *PeerRepositoryMock) GetById(id  primitive.ObjectID)(models.Peer, error)
 func (p *PeerRepositoryMock) GetAll(excludesUrls []string) ([]models.Peer, error) {
 	p.GetAllCalls= append(p.GetAllCalls, excludesUrls)
 	peer := models.Peer{
-		Id: primitive.NewObjectID(),
+		Id: primitive.NilObjectID,
 		Url: "http://tests.com",
 		Center: models.Center{Long: 11, Lat: 11},
 		City: "test city",
@@ -75,17 +79,18 @@ func (p *PeerRepositoryMock) GetSelf() (models.Peer, error) {
 		return models.Peer{}, err
 	}
 	return models.Peer{
-		Id: primitive.NewObjectIDFromTimestamp(time.Now()),
+		Id:primitive.NilObjectID,
 		Url: os.Getenv("HOST"),
 		Center: models.Center{Long: long, Lat: lat},
 		City: os.Getenv("CITY"),
 		Country: os.Getenv("COUNTRY"),
+		InfluenceRadius: 2,
+		DeliveryRadius: 4,
 	}, nil
 } 
 
 func (p *PeerRepositoryMock) Update(peer models.Peer, fields []string ) error {
-	p.UpdateCalls= append(p.UpdateCalls, 
-		struct{peer models.Peer; fields []string}{peer, fields})
+	p.UpdateCalls= append(p.UpdateCalls, ExpectUpdate{peer, fields})
 	return nil
 }
 

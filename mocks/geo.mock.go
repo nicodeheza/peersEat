@@ -24,14 +24,14 @@ func (g GeoService) IsSameCoor( coor1 models.Center, coor2 models.Center) bool {
 }
 
 func (g GeoService) IsInInfluenceArea(selfPeer models.Peer, peer models.Peer) bool{
-	if selfPeer.Url == "true"{
+	if peer.InfluenceRadius == 1{
 		return true
 	}
 	return false
 }
 
 func (g GeoService) IsInDeliveryArea(selfPeer models.Peer, peer models.Peer) bool{
-	if peer.Url == "true"{
+	if peer.DeliveryRadius == 1{
 		return true
 	}
 	return false
