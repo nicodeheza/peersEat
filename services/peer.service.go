@@ -3,6 +3,7 @@ package services
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"os"
@@ -21,7 +22,7 @@ type PeerServiceI interface{
 	AddNewPeer(newPeer models.Peer)error
 	GetSendMap(urls [] string, sendMap map[string][]string)
 	GetNewSendMap(excludes []string, sendMap map[string][]string)error
-	SendNewPeer(body types.PeerPresentationBody, peerUrl string, wg *sync.WaitGroup)
+	SendNewPeer(body types.PeerPresentationBody, peerUrl string, ch chan<- error, wg *sync.WaitGroup)
 	AllPeersToSend(excludeUrls []string)([]models.Peer, error)
 }
 
@@ -113,26 +114,42 @@ func (p PeerService) GetNewSendMap(excludes []string, sendMap map[string][]strin
 	return nil
 }
 
-func (p PeerService) SendNewPeer(body types.PeerPresentationBody, peerUrl string, wg *sync.WaitGroup){
+func (p PeerService) SendNewPeer(body types.PeerPresentationBody, peerUrl string, ch chan<- error, wg *sync.WaitGroup){
 	defer wg.Done()
 	url := peerUrl + "/peer/present"
 
 	jsonBody, err :=json.Marshal(body)
 
-	if err !=nil{return }
+	if err !=nil{
+		ch <- err
+		return 
+	}
 
-	_, err = http.Post(url, "application/json", bytes.NewBuffer(jsonBody))
+	resp, err := http.Post(url, "application/json", bytes.NewBuffer(jsonBody))
 
-	if err != nil && len(body.SendTo) > 0{
+	if err != nil{ 
+		ch <- err
+		return
+	 }
+
+	if  resp.StatusCode != 200 && len(body.SendTo) > 0{
 		// add foul
 		fmt.Printf("failed to send new peer to %v, retraining with %v\n", peerUrl,body.SendTo[0])
 		newBody := types.PeerPresentationBody{
 			NewPeer: body.NewPeer, 
 			SendTo: body.SendTo[1:],
 		}
-		p.SendNewPeer(newBody, body.SendTo[0], wg)
+		wg.Add(1)
+		p.SendNewPeer(newBody, body.SendTo[0], ch, wg)
+		return
 	}
 
+	if resp.StatusCode != 200 && len(body.SendTo) == 0{
+		ch <- errors.New("Send to is empty")
+		return
+	}
+
+	ch <- nil
 }
 
 func (p PeerService) AllPeersToSend(excludeUrls []string)([]models.Peer, error){

@@ -58,6 +58,7 @@ func (p PeerController) PeerPresentation(c *fiber.Ctx) error {
 		p.service.GetSendMap(body.SendTo, sendMap)
 	}
 
+	ch := make(chan error)
 	var wg sync.WaitGroup
 	for sendUrl, urls := range sendMap {
 		wg.Add(1)
@@ -65,9 +66,19 @@ func (p PeerController) PeerPresentation(c *fiber.Ctx) error {
 			NewPeer: newPeer,
 			SendTo: urls,
 		}
-		go p.service.SendNewPeer(body,sendUrl, &wg)
+		go p.service.SendNewPeer(body,sendUrl, ch, &wg)
 	}
-	wg.Wait()
+
+	go func(){
+		wg.Wait()
+		close(ch)
+	}()
+
+	for err := range ch{
+		if err != nil{
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"message": err.Error()})
+		}
+	}
 
 	return c.SendStatus(fiber.StatusOK)
 }

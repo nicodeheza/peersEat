@@ -1,15 +1,20 @@
 package services
 
 import (
+	"errors"
 	"fmt"
 	"log"
+	"net/http"
 	"os"
 	"reflect"
+	"sync"
 	"testing"
 
+	"github.com/jarcoal/httpmock"
 	"github.com/joho/godotenv"
 	"github.com/nicodeheza/peersEat/mocks"
 	"github.com/nicodeheza/peersEat/models"
+	"github.com/nicodeheza/peersEat/types"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -208,4 +213,96 @@ func TestGetNewSendMap(t *testing.T){
 	if !reflect.DeepEqual(expectMap, sendMap){
 		t.Errorf("unexpected send map.\n expected: %v\n got: %v", expectMap, sendMap)
 	}
+}
+
+func TestSendNewPeer(t *testing.T){
+	service, _ := initTest()
+	httpmock.Activate()
+	defer httpmock.DeactivateAndReset()
+
+
+	httpmock.RegisterResponder("POST", "http://test.com/peer/present",
+    func(req *http.Request) (*http.Response, error) {
+      return httpmock.NewStringResponse(200,""), nil
+    })
+	httpmock.RegisterResponder("POST", "http://error.com/peer/present",
+    func(req *http.Request) (*http.Response, error) {
+    return httpmock.NewStringResponse(500, ""), nil
+    })
+
+	httpmock.RegisterResponder("POST", "http://error2.com/peer/present",
+    func(req *http.Request) (*http.Response, error) {
+    return httpmock.NewStringResponse(500, ""), errors.New("test error")
+    })
+
+	newPeer:= models.Peer{
+		Url: "test",
+	}
+
+	tests := []struct{
+		Body types.PeerPresentationBody
+		Url string
+		Err error
+	}{
+		{
+			types.PeerPresentationBody{
+			NewPeer: newPeer, 
+			SendTo: []string{
+				"http://test.com", "http://test2.com",
+			},
+			}, 
+			"http://error.com",
+			nil,
+		},
+		{
+			types.PeerPresentationBody{
+				NewPeer: newPeer, 
+				SendTo: []string{},
+				},
+				"http://error.com",
+			errors.New("Send to is empty"),
+		},
+		{
+			types.PeerPresentationBody{
+				NewPeer: newPeer, 
+				SendTo: []string{"https://test.com", "http://test2.com",},
+				},
+				"http://error2.com",
+			errors.New(`Post "http://error2.com/peer/present": test error`),
+		},
+	}
+
+	var wg sync.WaitGroup
+	ch := make(chan error)
+
+	for _, test := range tests{
+		wg.Add(1)
+		go service.SendNewPeer(test.Body, test.Url, ch, &wg )
+	}
+
+	go func(){
+		wg.Wait()
+		close(ch)
+	}()
+
+	result:= make([]error, 0)
+	for err := range ch{
+		result = append(result, err)
+	}
+
+	for i, test:= range tests{
+		err := test.Err
+		if err == nil && result[i] != nil{
+			t.Errorf("expecting: %s\n got: %s\n", err, result[i].Error())
+		}
+
+		if err != nil && result[i] == nil{
+			t.Errorf("expecting: %s\n got: %s\n", err.Error(), result[i])
+		}
+
+		if err != nil && result[i] != nil && err.Error() != result[i].Error(){
+			t.Errorf("expecting: %s\n got: %s\n", err.Error(), result[i].Error())
+		}	
+	}
+
 }
