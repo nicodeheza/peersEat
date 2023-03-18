@@ -34,13 +34,13 @@ func NewPeerRepository(collection *mongo.Collection) *PeerRepository{
 
 
 
-func (p PeerRepository) Insert(peer models.Peer) (id primitive.ObjectID ,  err error) {
+func (p *PeerRepository) Insert(peer models.Peer) (id primitive.ObjectID ,  err error) {
 	result,err := p.coll.InsertOne(context.Background(), peer)
 	if err != nil{ return primitive.NewObjectID(), err}
 	return  result.InsertedID.(primitive.ObjectID) , nil
 }
 
-func (p PeerRepository) GetById(id  primitive.ObjectID)(models.Peer, error){
+func (p *PeerRepository) GetById(id  primitive.ObjectID)(models.Peer, error){
 	filter := bson.D{{Key:"_id", Value: id}}
 	var result models.Peer
 	err := p.coll.FindOne(context.Background(), filter).Decode(&result)
@@ -48,7 +48,7 @@ func (p PeerRepository) GetById(id  primitive.ObjectID)(models.Peer, error){
 	return	result, err
 }
 
-func (p PeerRepository) GetAll(excludesUrls []string) ([]models.Peer, error) {
+func (p *PeerRepository) GetAll(excludesUrls []string) ([]models.Peer, error) {
 	filter := bson.D{}
 
 	for _, excludeUrl := range excludesUrls{
@@ -62,7 +62,7 @@ func (p PeerRepository) GetAll(excludesUrls []string) ([]models.Peer, error) {
 	return results, nil
 }
 
-func (p PeerRepository) GetSelf() (models.Peer, error) {
+func (p *PeerRepository) GetSelf() (models.Peer, error) {
 
 	var result models.Peer
 
@@ -77,7 +77,7 @@ func (p PeerRepository) GetSelf() (models.Peer, error) {
 	return result, nil
 } 
 
-func (p PeerRepository) Update(peer models.Peer, fields []string ) error {
+func (p *PeerRepository) Update(peer models.Peer, fields []string ) error {
 	filter := bson.D{{Key: "_id",  Value: peer.Id}}
 
 	updateData := bson.D{}
@@ -101,7 +101,7 @@ func (p PeerRepository) Update(peer models.Peer, fields []string ) error {
 }
 
 
-func (p PeerRepository) GetAllUrls(excludes []string) ([]string, error){
+func (p *PeerRepository) GetAllUrls(excludes []string) ([]string, error){
 	filter := bson.D{}
 
 	for _, excludeUrl := range excludes{

@@ -35,7 +35,7 @@ func NewPeerService(repository repositories.PeerRepositoryI, geo geo.GeoServiceI
  return &PeerService{repository, geo}
 }
 
-func (p PeerService) InitPeer() {
+func (p *PeerService) InitPeer() {
 	centerSrt:= os.Getenv("CENTER")
 	centerSlice := strings.Split(centerSrt, ",")
 	long, _ := strconv.ParseFloat(centerSlice[0], 64)
@@ -53,7 +53,7 @@ func (p PeerService) InitPeer() {
 	// Todo: create new peers endpoint and add here call
 }
 
-func (p PeerService) AddNewPeer(newPeer models.Peer) error {
+func (p *PeerService) AddNewPeer(newPeer models.Peer) error {
 	id, err :=  p.repo.Insert(newPeer)
 	if err != nil{
 		return err
@@ -89,7 +89,7 @@ func (p PeerService) AddNewPeer(newPeer models.Peer) error {
 	return nil
 }
 
-func (p PeerService) GetSendMap(urls [] string, sendMap map[string][]string){
+func (p *PeerService) GetSendMap(urls [] string, sendMap map[string][]string){
 	if len(urls) == 0{return}
 	if len(urls) == 1 {
 		sendMap[urls[0]]= nil
@@ -103,7 +103,7 @@ func (p PeerService) GetSendMap(urls [] string, sendMap map[string][]string){
 	sendMap[list2[0]]= list2[1:]
 }
 
-func (p PeerService) GetNewSendMap(excludes []string, sendMap map[string][]string)error{
+func (p *PeerService) GetNewSendMap(excludes []string, sendMap map[string][]string)error{
 	allUrls, err := p.repo.GetAllUrls(excludes)
 
 	if err != nil{
@@ -114,7 +114,7 @@ func (p PeerService) GetNewSendMap(excludes []string, sendMap map[string][]strin
 	return nil
 }
 
-func (p PeerService) SendNewPeer(body types.PeerPresentationBody, peerUrl string, ch chan<- error, wg *sync.WaitGroup){
+func (p *PeerService) SendNewPeer(body types.PeerPresentationBody, peerUrl string, ch chan<- error, wg *sync.WaitGroup){
 	defer wg.Done()
 	url := peerUrl + "/peer/present"
 
@@ -152,6 +152,6 @@ func (p PeerService) SendNewPeer(body types.PeerPresentationBody, peerUrl string
 	ch <- nil
 }
 
-func (p PeerService) AllPeersToSend(excludeUrls []string)([]models.Peer, error){
+func (p *PeerService) AllPeersToSend(excludeUrls []string)([]models.Peer, error){
 	return p.repo.GetAll(excludeUrls)
 }

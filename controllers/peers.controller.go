@@ -31,7 +31,7 @@ type peerPresentationBody struct{
 	SendTo  []string
 }
 
-func (p PeerController) PeerPresentation(c *fiber.Ctx) error {
+func (p *PeerController) PeerPresentation(c *fiber.Ctx) error {
 	body := new(types.PeerPresentationBody)
 	if err := c.BodyParser(&body); err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"message": err.Error()})
@@ -45,8 +45,6 @@ func (p PeerController) PeerPresentation(c *fiber.Ctx) error {
 	}
 
 	p.service.AddNewPeer(newPeer)
-
-	// (return peers list on other end point).
 
 	var sendMap map[string][]string
 	if body.SendTo == nil{
@@ -83,7 +81,7 @@ func (p PeerController) PeerPresentation(c *fiber.Ctx) error {
 	return c.SendStatus(fiber.StatusOK)
 }
 
-func (p PeerController) SendAllPeers(c *fiber.Ctx) error{
+func (p *PeerController) SendAllPeers(c *fiber.Ctx) error{
 	query := new(types.SendAllPeerQuery)
 
 	if err := c.QueryParser(query); err != nil{
