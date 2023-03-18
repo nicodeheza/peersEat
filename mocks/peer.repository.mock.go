@@ -27,7 +27,7 @@ func NewPeerRepository() *PeerRepositoryMock{
 	return &PeerRepositoryMock{}
 }
 
-func (p *PeerRepositoryMock) CleatCalls(){
+func (p *PeerRepositoryMock) ClearCalls(){
 	p.InsertCalls = nil
 	p.GetByIdCalls = nil
 	p.UpdateCalls = nil

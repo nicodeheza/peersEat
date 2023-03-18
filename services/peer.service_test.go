@@ -82,7 +82,7 @@ func TestAddNewPeer(t *testing.T){
 	}
 
 	selfPeer,_:= repo.GetSelf()
-	repo.CleatCalls()
+	repo.ClearCalls()
 
 	selfInInfluence :=selfPeer
 	selfInInfluence.InAreaPeers= append(selfInInfluence.InAreaPeers, primitive.NilObjectID)
@@ -136,7 +136,7 @@ func TestAddNewPeer(t *testing.T){
 		if len(updateCalls) >0 && !reflect.DeepEqual(updateCalls[0], test.Expect){
 			t.Errorf("update should be called with args\n %v\n, but had been caller with args\n %v", test.Expect, updateCalls[0])
 		}
-		repo.CleatCalls()
+		repo.ClearCalls()
 	}
 }
 
@@ -304,5 +304,26 @@ func TestSendNewPeer(t *testing.T){
 			t.Errorf("expecting: %s\n got: %s\n", err.Error(), result[i].Error())
 		}	
 	}
+
+}
+
+func TestAllPeerToSend(t *testing.T){
+	service, repo := initTest()
+
+	arg:= []string{"http://fake.com"}
+	expect, _:= repo.GetAll(arg) 
+	repo.ClearCalls()
+
+	result, _:= service.AllPeersToSend(arg)
+
+	if !reflect.DeepEqual(result, expect){
+		t.Errorf("expecting result: %v\ngot: %v\n", expect, result)
+	}
+
+	if !reflect.DeepEqual(repo.GetAllCalls[0], arg){
+		t.Errorf("expecting arg: %v\ngot: %v\n", arg, repo.GetAllCalls[0])
+	}
+
+
 
 }
