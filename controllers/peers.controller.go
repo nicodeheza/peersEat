@@ -46,7 +46,7 @@ func (p *PeerController) PeerPresentation(c *fiber.Ctx) error {
 
 	p.service.AddNewPeer(newPeer)
 
-	var sendMap map[string][]string
+	sendMap:= make(map[string][]string)
 	if body.SendTo == nil{
 		err:= p.service.GetNewSendMap([]string{newPeer.Url, os.Getenv("HOST")}, sendMap)
 		if err != nil{

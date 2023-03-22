@@ -36,28 +36,27 @@ func (p *PeerServiceMock) AddNewPeer(newPeer models.Peer) error {
 }
 
 func (p *PeerServiceMock) GetSendMap(urls [] string, sendMap map[string][]string){
-	p.Calls["GetSendMap"]= append(p.Calls["GetSendMap"], []interface{}{urls, sendMap})
-
-	if len(urls) == 0{return}
-	if len(urls) == 1 {
-		sendMap[urls[0]]= nil
-		return
+	gotMap:= make(map[string][]string)
+	for k,v := range sendMap{
+		gotMap[k]=v
 	}
-	cutIndex := int(len(urls) / 2)
-	list1 :=  urls[0:cutIndex]
-	list2 :=  urls[cutIndex:]
+	p.Calls["GetSendMap"]= append(p.Calls["GetSendMap"], []interface{}{urls, gotMap})
 
-	sendMap[list1[0]]= list1[1:]
-	sendMap[list2[0]]= list2[1:]
+	sendMap["http://tests1.com"]= []string{"http://tests2.com","http://tests3.com"}
+	sendMap["http://tests4.com"]= []string{"http://tests5.com","http://tests6.com"}
 }
 
 func (p *PeerServiceMock) GetNewSendMap(excludes []string, sendMap map[string][]string)error{
-	p.Calls["GetNewSendMap"]= append(p.Calls["GetNewSendMap"], []interface{}{excludes, sendMap})
+	gotMap:= make(map[string][]string)
+	for k,v := range sendMap{
+		gotMap[k]=v
+	}
+	p.Calls["GetNewSendMap"]= append(p.Calls["GetNewSendMap"], []interface{}{excludes, gotMap})
 
 	if excludes[0] =="error"{
 		return errors.New("test error")
 	}
-	urls:= []string{"http://tests1.com", "http://tests2.com","http://tests3.com","http://tests4.com","http://tests5.com","http://tests6.com","http://tests7.com"}
+	urls:= []string{"http://tests1.com", "http://tests2.com","http://tests3.com","http://tests4.com","http://tests5.com","http://tests6.com"}
 	p.GetSendMap(urls, sendMap)
 	return nil
 }

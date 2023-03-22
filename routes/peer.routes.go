@@ -9,5 +9,5 @@ func peerRoutes(app *fiber.App, controllers controllers.PeerControllerI){
 	peerGroup:= app.Group("/peer")
 
 	peerGroup.Post("/present", controllers.PeerPresentation)
-	peerGroup.Post("/getAll", controllers.SendAllPeers)
+	peerGroup.Get("/all", controllers.SendAllPeers)
 }
