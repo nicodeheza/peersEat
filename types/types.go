@@ -7,6 +7,6 @@ type PeerPresentationBody struct {
 	SendTo  []string
 }
 
-type SendAllPeerQuery struct{
+type SendAllPeerQuery struct {
 	Excludes []string `query:"excludes"`
 }

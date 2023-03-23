@@ -11,22 +11,21 @@ import (
 	"github.com/nicodeheza/peersEat/types"
 )
 
-type PeerControllerI interface{
+type PeerControllerI interface {
 	PeerPresentation(c *fiber.Ctx) error
 	SendAllPeers(c *fiber.Ctx) error
 }
 
-type PeerController struct{
-	service services.PeerServiceI
+type PeerController struct {
+	service  services.PeerServiceI
 	validate validations.ValidateI
 }
 
-func NewPeerController(service services.PeerServiceI, validate validations.ValidateI)*PeerController{
+func NewPeerController(service services.PeerServiceI, validate validations.ValidateI) *PeerController {
 	return &PeerController{service, validate}
 }
 
-
-type peerPresentationBody struct{
+type peerPresentationBody struct {
 	NewPeer models.Peer
 	SendTo  []string
 }
@@ -36,7 +35,7 @@ func (p *PeerController) PeerPresentation(c *fiber.Ctx) error {
 	if err := c.BodyParser(&body); err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"message": err.Error()})
 	}
-	
+
 	newPeer := body.NewPeer
 
 	errors := p.validate.ValidatePeer(newPeer)
@@ -46,13 +45,13 @@ func (p *PeerController) PeerPresentation(c *fiber.Ctx) error {
 
 	p.service.AddNewPeer(newPeer)
 
-	sendMap:= make(map[string][]string)
-	if body.SendTo == nil{
-		err:= p.service.GetNewSendMap([]string{newPeer.Url, os.Getenv("HOST")}, sendMap)
-		if err != nil{
+	sendMap := make(map[string][]string)
+	if body.SendTo == nil {
+		err := p.service.GetNewSendMap([]string{newPeer.Url, os.Getenv("HOST")}, sendMap)
+		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"message": err.Error()})
 		}
-	}else{
+	} else {
 		p.service.GetSendMap(body.SendTo, sendMap)
 	}
 
@@ -60,20 +59,20 @@ func (p *PeerController) PeerPresentation(c *fiber.Ctx) error {
 	var wg sync.WaitGroup
 	for sendUrl, urls := range sendMap {
 		wg.Add(1)
-		body:= types.PeerPresentationBody{
+		body := types.PeerPresentationBody{
 			NewPeer: newPeer,
-			SendTo: urls,
+			SendTo:  urls,
 		}
-		go p.service.SendNewPeer(body,sendUrl, ch, &wg)
+		go p.service.SendNewPeer(body, sendUrl, ch, &wg)
 	}
 
-	go func(){
+	go func() {
 		wg.Wait()
 		close(ch)
 	}()
 
-	for err := range ch{
-		if err != nil{
+	for err := range ch {
+		if err != nil {
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"message": err.Error()})
 		}
 	}
@@ -81,16 +80,16 @@ func (p *PeerController) PeerPresentation(c *fiber.Ctx) error {
 	return c.SendStatus(fiber.StatusOK)
 }
 
-func (p *PeerController) SendAllPeers(c *fiber.Ctx) error{
+func (p *PeerController) SendAllPeers(c *fiber.Ctx) error {
 	query := new(types.SendAllPeerQuery)
 
-	if err := c.QueryParser(query); err != nil{
+	if err := c.QueryParser(query); err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"message": err.Error()})
 	}
 
 	peers, err := p.service.AllPeersToSend(query.Excludes)
 
-	if err != nil{
+	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"message": err.Error()})
 	}
 

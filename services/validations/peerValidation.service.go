@@ -5,35 +5,34 @@ import (
 	"github.com/nicodeheza/peersEat/models"
 )
 
-type Validate struct{
+type Validate struct {
 	validate *validator.Validate
 }
-type ValidateI interface{
+type ValidateI interface {
 	ValidatePeer(peer models.Peer) []*ErrorResponse
 }
 
-func NewValidator(validate *validator.Validate)*Validate{
+func NewValidator(validate *validator.Validate) *Validate {
 	return &Validate{validate}
 }
 
-type ErrorResponse struct{
+type ErrorResponse struct {
 	FailedField string
-	Tag string
-	Value string
+	Tag         string
+	Value       string
 }
 
-
-func(v Validate) ValidatePeer(peer models.Peer) []*ErrorResponse{
+func (v Validate) ValidatePeer(peer models.Peer) []*ErrorResponse {
 	var errors []*ErrorResponse
 	err := v.validate.Struct(peer)
 
-	if err != nil{
-		for _,err := range err.(validator.ValidationErrors){
+	if err != nil {
+		for _, err := range err.(validator.ValidationErrors) {
 			var element ErrorResponse
-			element.FailedField= err.StructNamespace()
-			element.Tag= err.Tag()
-			element.Value= err.Param()
-			errors= append(errors, &element)
+			element.FailedField = err.StructNamespace()
+			element.Tag = err.Tag()
+			element.Value = err.Param()
+			errors = append(errors, &element)
 		}
 	}
 

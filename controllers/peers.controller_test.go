@@ -8,6 +8,7 @@ import (
 	"net/http/httptest"
 	"os"
 	"reflect"
+	"strings"
 	"sync"
 	"testing"
 
@@ -20,28 +21,28 @@ import (
 	"github.com/nicodeheza/peersEat/types"
 )
 
-func initTest()(*PeerController, *mocks.PeerServiceMock, *fiber.App){
+func initTest() (*PeerController, *mocks.PeerServiceMock, *fiber.App) {
 	err := godotenv.Load("../.env")
-	if err != nil{
+	if err != nil {
 		log.Fatal("Error loading .env file")
 	}
 
-	service:= mocks.NewPeerServiceMock()
-	validate:= validations.NewValidator(validator.New())
-	peerController:= NewPeerController(service, validate)
-	app:= fiber.New()
+	service := mocks.NewPeerServiceMock()
+	validate := validations.NewValidator(validator.New())
+	peerController := NewPeerController(service, validate)
+	app := fiber.New()
 
 	return peerController, service, app
 }
 
 func TestPeerPresentation(t *testing.T) {
-	controller, service, app := initTest() 
+	controller, service, app := initTest()
 
-	type Test struct{
-		Title string
-		Body types.PeerPresentationBody
-		Status int
-		Json string
+	type Test struct {
+		Title         string
+		Body          types.PeerPresentationBody
+		Status        int
+		Json          string
 		ServiceCallas map[string][][]interface{}
 	}
 
@@ -50,15 +51,15 @@ func TestPeerPresentation(t *testing.T) {
 	wg1.Add(1)
 	wg2.Add(2)
 
-	sendTo:=[] string{"http://tests1.com","http://tests2.com","http://tests3.com","http://tests4.com","http://tests5.com","http://tests6.com",}
+	sendTo := []string{"http://tests1.com", "http://tests2.com", "http://tests3.com", "http://tests4.com", "http://tests5.com", "http://tests6.com"}
 
-	basePeer:= models.Peer{
-		Url: "http://test.com",
-		Center: models.Center{Long: 1,Lat: 1},
-		City:"test",
-		Country: "test",
+	basePeer := models.Peer{
+		Url:             "http://test.com",
+		Center:          models.Center{Long: 1, Lat: 1},
+		City:            "test",
+		Country:         "test",
 		InfluenceRadius: 2,
-		DeliveryRadius: 3,
+		DeliveryRadius:  3,
 	}
 	tests := []Test{
 		{
@@ -70,44 +71,44 @@ func TestPeerPresentation(t *testing.T) {
 				SendTo: nil,
 			},
 			Status: 400,
-			Json: "[map[FailedField:Peer.Url Tag:url Value:] map[FailedField:Peer.Center.Long Tag:required Value:] map[FailedField:Peer.Center.Lat Tag:required Value:] map[FailedField:Peer.City Tag:required Value:] map[FailedField:Peer.Country Tag:required Value:]]",
+			Json:   "[map[FailedField:Peer.Url Tag:url Value:] map[FailedField:Peer.Center.Long Tag:required Value:] map[FailedField:Peer.Center.Lat Tag:required Value:] map[FailedField:Peer.City Tag:required Value:] map[FailedField:Peer.Country Tag:required Value:]]",
 		},
 		{
 			Title: "success with not send to",
 			Body: types.PeerPresentationBody{
 				NewPeer: basePeer,
-				SendTo: nil,
+				SendTo:  nil,
 			},
 			Status: 200,
 			ServiceCallas: map[string][][]interface{}{
-				"AddNewPeer": {{basePeer}},
+				"AddNewPeer":    {{basePeer}},
 				"GetNewSendMap": {{[]string{basePeer.Url, os.Getenv("HOST")}, make(map[string][]string)}},
 				"SendNewPeer": {{
 					types.PeerPresentationBody{
 						NewPeer: basePeer,
-						SendTo: []string{"http://tests2.com","http://tests3.com"},
+						SendTo:  []string{"http://tests2.com", "http://tests3.com"},
 					},
 					"http://tests1.com",
 					make(chan error),
 					&wg1,
 				},
-				{
-					types.PeerPresentationBody{
-						NewPeer: basePeer,
-						SendTo: []string{"http://tests5.com","http://tests6.com"},
+					{
+						types.PeerPresentationBody{
+							NewPeer: basePeer,
+							SendTo:  []string{"http://tests5.com", "http://tests6.com"},
+						},
+						"http://tests4.com",
+						make(chan error),
+						&wg2,
 					},
-					"http://tests4.com",
-					make(chan error),
-					&wg2,
 				},
-			},
 			},
 		},
 		{
 			Title: "success with send to",
 			Body: types.PeerPresentationBody{
 				NewPeer: basePeer,
-				SendTo: sendTo,
+				SendTo:  sendTo,
 			},
 			Status: 200,
 			ServiceCallas: map[string][][]interface{}{
@@ -116,93 +117,163 @@ func TestPeerPresentation(t *testing.T) {
 				"SendNewPeer": {{
 					types.PeerPresentationBody{
 						NewPeer: basePeer,
-						SendTo: []string{"http://tests2.com","http://tests3.com"},
+						SendTo:  []string{"http://tests2.com", "http://tests3.com"},
 					},
 					"http://tests1.com",
 					make(chan error),
 					&wg1,
 				},
-				{
-					types.PeerPresentationBody{
-						NewPeer: basePeer,
-						SendTo: []string{"http://tests5.com","http://tests6.com"},
+					{
+						types.PeerPresentationBody{
+							NewPeer: basePeer,
+							SendTo:  []string{"http://tests5.com", "http://tests6.com"},
+						},
+						"http://tests4.com",
+						make(chan error),
+						&wg2,
 					},
-					"http://tests4.com",
-					make(chan error),
-					&wg2,
 				},
-			},
 			},
 		},
 	}
 
 	app.Post("/", controller.PeerPresentation)
 
-	for _,test := range tests{
+	for _, test := range tests {
 
 		body, err := json.Marshal(test.Body)
-		if err != nil{
+		if err != nil {
 			t.Fatal(err)
 		}
-		req := httptest.NewRequest("POST", "/",  bytes.NewReader(body))
+		req := httptest.NewRequest("POST", "/", bytes.NewReader(body))
 		req.Header.Set("Content-Type", "application/json")
 
-		resp, err := app.Test(req,1)
-		if err != nil{
+		resp, err := app.Test(req, 1)
+		if err != nil {
 			t.Fatal()
 		}
 
 		var b interface{}
 		json.NewDecoder(resp.Body).Decode(&b)
-		
-		if test.Status != resp.StatusCode{
-			t.Errorf("%s\n expecting status %d but got %d", 
-			test.Title, test.Status, resp.StatusCode)
+
+		if test.Status != resp.StatusCode {
+			t.Errorf("%s\n expecting status %d but got %d",
+				test.Title, test.Status, resp.StatusCode)
 		}
 
-		if test.Json !="" && test.Json != fmt.Sprintf("%v",b){
+		if test.Json != "" && test.Json != fmt.Sprintf("%v", b) {
 			t.Errorf("%s\n incorrect response body\n expecting: %s\n got: %s",
-					test.Title, test.Json, fmt.Sprintf("%v",b))
+				test.Title, test.Json, fmt.Sprintf("%v", b))
 		}
 
-		if test.ServiceCallas != nil{
-			for k,v:=range test.ServiceCallas{
+		if test.ServiceCallas != nil {
+			for k, v := range test.ServiceCallas {
 				expect := v
 				got := service.Calls[k]
 
-				for i:= range expect{
-					for j, ele:= range expect[i]{
-						if reflect.ValueOf(ele).Kind()==reflect.Ptr{
-							expect[i][j]= "ptr"
+				for i := range expect {
+					for j, ele := range expect[i] {
+						if reflect.ValueOf(ele).Kind() == reflect.Ptr {
+							expect[i][j] = "ptr"
 						}
-						if reflect.ValueOf(ele).Kind()==reflect.Chan{
-							expect[i][j]= "chan"
-						}
-					}
-				} 
-
-				for i:= range got{
-					for j, ele:= range got[i]{
-						if reflect.ValueOf(ele).Kind()==reflect.Ptr{
-							got[i][j]= "ptr"
-						}
-						if reflect.ValueOf(ele).Kind()==reflect.Chan{
-							got[i][j]= "chan"
+						if reflect.ValueOf(ele).Kind() == reflect.Chan {
+							expect[i][j] = "chan"
 						}
 					}
-				} 
+				}
 
-				if !reflect.DeepEqual(expect, got){
-					tmp:= expect[0]
-					expect[0]= expect[1]
-					expect[1]=tmp
-					if !reflect.DeepEqual(expect, got){
+				for i := range got {
+					for j, ele := range got[i] {
+						if reflect.ValueOf(ele).Kind() == reflect.Ptr {
+							got[i][j] = "ptr"
+						}
+						if reflect.ValueOf(ele).Kind() == reflect.Chan {
+							got[i][j] = "chan"
+						}
+					}
+				}
+
+				if !reflect.DeepEqual(expect, got) {
+					tmp := expect[0]
+					expect[0] = expect[1]
+					expect[1] = tmp
+					if !reflect.DeepEqual(expect, got) {
 						t.Errorf("%s\n\n incorrect service %s call\n\n expecting: %v\n\n got: %v\n\n",
-								test.Title, k ,expect, got)
-						
+							test.Title, k, expect, got)
+
 					}
 				}
 			}
+		}
+
+		service.ClearCalls()
+	}
+}
+
+func TestSendAllPeers(t *testing.T) {
+	controller, service, app := initTest()
+
+	type Test struct {
+		Title         string
+		Query         string
+		Status        int
+		Json          string
+		ServiceCallas map[string][][]interface{}
+	}
+
+	queryError := "error,http://test2.com"
+	query := "http://test1.com,http://test2.com"
+
+	tests := []Test{
+		{
+			Title:  "return error",
+			Query:  queryError,
+			Status: 500,
+			Json:   "map[message:test error]",
+			ServiceCallas: map[string][][]interface{}{
+				"AllPeersToSend": {{strings.Split(queryError, ",")}},
+			},
+		},
+		{
+			Title:  "return success",
+			Query:  query,
+			Status: 200,
+			Json:   "[map[Center:map[Lat:0 Long:0] id:000000000000000000000000 url:http://tests.com] map[Center:map[Lat:0 Long:0] id:000000000000000000000000 url:http://tests.com] map[Center:map[Lat:0 Long:0] id:000000000000000000000000 url:http://tests.com] map[Center:map[Lat:0 Long:0] id:000000000000000000000000 url:http://tests.com]]",
+			ServiceCallas: map[string][][]interface{}{
+				"AllPeersToSend": {{strings.Split(query, ",")}},
+			},
+		},
+	}
+
+	app.Get("/", controller.SendAllPeers)
+	for _, test := range tests {
+		req := httptest.NewRequest("GET", fmt.Sprintf("/?excludes=%s", test.Query), nil)
+		req.Header.Set("Content-Type", "application/json")
+
+		resp, err := app.Test(req, 1)
+		if err != nil {
+			t.Fatal()
+		}
+
+		var b interface{}
+
+		json.NewDecoder(resp.Body).Decode(&b)
+
+		if resp.StatusCode != test.Status {
+			t.Errorf("%s\n\n incorrect status code\n\n expected: %d\n got: %d\n\n",
+				test.Title, test.Status, resp.StatusCode)
+		}
+
+		bodyString := fmt.Sprintf("%v", b)
+
+		if test.Json != bodyString {
+			t.Errorf("%s\n\n incorrect body\n\n expected: %s\n\n got: %s\n\n",
+				test.Title, test.Json, bodyString)
+		}
+
+		if !reflect.DeepEqual(test.ServiceCallas, service.Calls) {
+			t.Errorf("%s\n\n incorrect service call\n\n expected: %v\n\n got: %v\n\n",
+				test.Title, test.ServiceCallas, service.Calls)
 		}
 
 		service.ClearCalls()
