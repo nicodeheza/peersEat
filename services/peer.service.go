@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"strconv"
@@ -50,7 +51,42 @@ func (p *PeerService) InitPeer() {
 
 	p.repo.Insert(selfPeer)
 
-	// Todo: create new peers endpoint and add here call
+	initialPeer := os.Getenv("INITIAL_PEER")
+
+	if initialPeer != "" {
+		structBody := types.PeerPresentationBody{
+			NewPeer: selfPeer,
+		}
+		postBody, err := json.Marshal(structBody)
+		if err != nil {
+			log.Fatal("Marshal error")
+		}
+		resp, err := http.Post(fmt.Sprintf("%s/peer/present", initialPeer),
+			"application/json", bytes.NewBuffer(postBody))
+		if err != nil || resp.StatusCode != 200 {
+			log.Fatal("bad request")
+		}
+
+		resp, err = http.Get(fmt.Sprintf("%s/peer/all?excludes=%s", initialPeer, selfPeer.Url))
+		if err != nil || resp.StatusCode != 200 {
+			log.Fatal("bad request")
+		}
+
+		newPeers := make([]models.Peer, 0)
+		decoder := json.NewDecoder(resp.Body)
+
+		err = decoder.Decode(&newPeers)
+		if err != nil {
+			log.Fatal("fail to decode")
+		}
+
+		_, err = p.repo.InsertMany(newPeers)
+		if err != nil {
+			log.Fatal("fail to inset new peers")
+		}
+
+		// update repository and this tests
+	}
 }
 
 func (p *PeerService) AddNewPeer(newPeer models.Peer) error {
