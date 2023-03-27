@@ -40,7 +40,7 @@ func (p *PeerRepository) Insert(peer models.Peer) (id primitive.ObjectID, err er
 	return result.InsertedID.(primitive.ObjectID), nil
 }
 
-func (p *PeerRepository) InsertMany(peers []models.Peer) (ids []interface{}, err error) {
+func (p *PeerRepository) InsertMany(peers []models.Peer) (ids []primitive.ObjectID, err error) {
 	peersToInsert := make([]interface{}, len(peers))
 
 	for i, peer := range peers {
@@ -52,7 +52,13 @@ func (p *PeerRepository) InsertMany(peers []models.Peer) (ids []interface{}, err
 		return nil, err
 	}
 
-	return result.InsertedIDs, nil
+	resultIds := make([]primitive.ObjectID, len(result.InsertedIDs))
+
+	for i, id := range result.InsertedIDs {
+		resultIds[i] = id.(primitive.ObjectID)
+	}
+
+	return resultIds, nil
 }
 
 func (p *PeerRepository) GetById(id primitive.ObjectID) (models.Peer, error) {
