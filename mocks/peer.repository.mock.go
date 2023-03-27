@@ -46,10 +46,10 @@ func (p *PeerRepositoryMock) Insert(peer models.Peer) (id primitive.ObjectID, er
 	return primitive.NilObjectID, nil
 }
 
-func (p *PeerRepositoryMock) InsertMany(peers []models.Peer) (ids []interface{}, err error) {
+func (p *PeerRepositoryMock) InsertMany(peers []models.Peer) (ids []primitive.ObjectID, err error) {
 	p.InsertManyCalls = append(p.InsertManyCalls, peers)
 
-	result := make([]interface{}, len(peers))
+	result := make([]primitive.ObjectID, len(peers))
 
 	for i := range peers {
 		result[i] = primitive.NewObjectIDFromTimestamp(time.Now())

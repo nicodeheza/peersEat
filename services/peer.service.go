@@ -64,11 +64,15 @@ func (p *PeerService) InitPeer() {
 		resp, err := http.Post(fmt.Sprintf("%s/peer/present", initialPeer),
 			"application/json", bytes.NewBuffer(postBody))
 		if err != nil || resp.StatusCode != 200 {
+			fmt.Println(err)
+			fmt.Println(resp.StatusCode)
 			log.Fatal("bad request")
 		}
 
 		resp, err = http.Get(fmt.Sprintf("%s/peer/all?excludes=%s", initialPeer, selfPeer.Url))
 		if err != nil || resp.StatusCode != 200 {
+			fmt.Println(err)
+			fmt.Println(resp.StatusCode)
 			log.Fatal("bad request")
 		}
 
@@ -85,7 +89,6 @@ func (p *PeerService) InitPeer() {
 			log.Fatal("fail to inset new peers")
 		}
 
-		// update repository and this tests
 	}
 }
 

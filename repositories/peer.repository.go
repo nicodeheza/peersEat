@@ -21,7 +21,7 @@ type PeerRepositoryI interface {
 	GetSelf() (models.Peer, error)
 	Update(peer models.Peer, fields []string) error
 	GetAllUrls(excludes []string) ([]string, error)
-	InsertMany(peers []models.Peer) (ids []interface{}, err error)
+	InsertMany(peers []models.Peer) (ids []primitive.ObjectID, err error)
 }
 
 type PeerRepository struct {
