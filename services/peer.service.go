@@ -37,6 +37,7 @@ func NewPeerService(repository repositories.PeerRepositoryI, geo geo.GeoServiceI
 }
 
 func (p *PeerService) InitPeer() {
+	defer fmt.Println("Peer installed successfully")
 	centerSrt := os.Getenv("CENTER")
 	centerSlice := strings.Split(centerSrt, ",")
 	long, _ := strconv.ParseFloat(centerSlice[0], 64)
