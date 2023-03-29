@@ -1,17 +1,21 @@
 version: "3"
 services:
-  peer:
+  peer0:
+    build: ..
+    depends_on:
+      - mongo0
     ports:
       - "3000:3000"
     environment:
-      - HOST=http://localhost:3000
+      - HOST=http://peer0:3000
       - PORT=3000
       - CENTER=-34.574985,-58.482189
       - CITY="Buenos Aires"
       - COUNTRY=Argentina
-      - MONGO_URI=mongodb://mongo:27018/peersEatDB
+      - MONGO_URI=mongodb://mongo0:27018/peersEatDB
       - INITIAL_PEER=
-  mongo:
+  mongo0:
+    image: mongo
     command: mongod --port 27018
     ports:
       - "27018:27018"
