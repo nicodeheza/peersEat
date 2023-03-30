@@ -55,22 +55,8 @@ func (p *PeerService) InitPeer() {
 	initialPeer := os.Getenv("INITIAL_PEER")
 
 	if initialPeer != "" {
-		structBody := types.PeerPresentationBody{
-			NewPeer: selfPeer,
-		}
-		postBody, err := json.Marshal(structBody)
-		if err != nil {
-			log.Fatal("Marshal error")
-		}
-		resp, err := http.Post(fmt.Sprintf("%s/peer/present", initialPeer),
-			"application/json", bytes.NewBuffer(postBody))
-		if err != nil || resp.StatusCode != 200 {
-			fmt.Println(err)
-			fmt.Println(resp.StatusCode)
-			log.Fatal("bad request")
-		}
 
-		resp, err = http.Get(fmt.Sprintf("%s/peer/all?excludes=%s", initialPeer, selfPeer.Url))
+		resp, err := http.Get(fmt.Sprintf("%s/peer/all?excludes=%s", initialPeer, selfPeer.Url))
 		if err != nil || resp.StatusCode != 200 {
 			fmt.Println(err)
 			fmt.Println(resp.StatusCode)
@@ -88,6 +74,36 @@ func (p *PeerService) InitPeer() {
 		_, err = p.repo.InsertMany(newPeers)
 		if err != nil {
 			log.Fatal("fail to inset new peers")
+		}
+
+		sendTo, err := p.repo.GetAllUrls([]string{selfPeer.Url, initialPeer})
+		if err != nil {
+			log.Fatal("fail to get all peers")
+		}
+
+		bodyMap := map[string]interface{}{
+			"newPeer": map[string]interface{}{
+				"url": selfPeer.Url,
+				"center": map[string]interface{}{
+					"long": selfPeer.Center.Long,
+					"lat":  selfPeer.Center.Lat,
+				},
+				"city":    selfPeer.City,
+				"Country": selfPeer.Country,
+			},
+			"sendTo": sendTo,
+		}
+
+		postBody, err := json.Marshal(bodyMap)
+		if err != nil {
+			log.Fatal("Marshal error")
+		}
+		resp, err = http.Post(fmt.Sprintf("%s/peer/present", initialPeer),
+			"application/json", bytes.NewBuffer(postBody))
+		if err != nil || resp.StatusCode != 200 {
+			fmt.Println(err)
+			fmt.Println(resp.StatusCode)
+			log.Fatal("bad request")
 		}
 
 	}

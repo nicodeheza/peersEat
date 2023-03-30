@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"os"
 	"sync"
 
 	"github.com/gofiber/fiber/v2"
@@ -45,35 +44,31 @@ func (p *PeerController) PeerPresentation(c *fiber.Ctx) error {
 
 	p.service.AddNewPeer(newPeer)
 
-	sendMap := make(map[string][]string)
-	if body.SendTo == nil {
-		err := p.service.GetNewSendMap([]string{newPeer.Url, os.Getenv("HOST")}, sendMap)
-		if err != nil {
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"message": err.Error()})
-		}
-	} else {
+	if body.SendTo != nil {
+		sendMap := make(map[string][]string)
 		p.service.GetSendMap(body.SendTo, sendMap)
-	}
 
-	ch := make(chan error)
-	var wg sync.WaitGroup
-	for sendUrl, urls := range sendMap {
-		wg.Add(1)
-		body := types.PeerPresentationBody{
-			NewPeer: newPeer,
-			SendTo:  urls,
+		ch := make(chan error)
+		var wg sync.WaitGroup
+
+		for sendUrl, urls := range sendMap {
+			wg.Add(1)
+			body := types.PeerPresentationBody{
+				NewPeer: newPeer,
+				SendTo:  urls,
+			}
+			go p.service.SendNewPeer(body, sendUrl, ch, &wg)
 		}
-		go p.service.SendNewPeer(body, sendUrl, ch, &wg)
-	}
 
-	go func() {
-		wg.Wait()
-		close(ch)
-	}()
+		go func() {
+			wg.Wait()
+			close(ch)
+		}()
 
-	for err := range ch {
-		if err != nil {
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"message": err.Error()})
+		for err := range ch {
+			if err != nil {
+				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"message": err.Error()})
+			}
 		}
 	}
 
