@@ -6,3 +6,4 @@ vendor/
 .air.toml
 .env
 Makefile
+TODO.md
