@@ -9,7 +9,7 @@ services:
     environment:
       - HOST=http://peer1:3001
       - PORT=3001
-      - CENTER=-34.578262, -58.459972
+      - CENTER=-34.578262,-58.459972
       - CITY="Buenos Aires"
       - COUNTRY=Argentina
       - MONGO_URI=mongodb://mongo1:27019/peersEatDB
