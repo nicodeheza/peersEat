@@ -33,7 +33,9 @@ type Restaurant struct {
 	MinDeliveryTime   uint    `bson:"minDeliveryTime,omitempty" json:"minDeliveryTime,omitempty"`
 	MaxDeliveryTime   uint    `bson:"maxDeliveryTime,omitempty" json:"maxDeliveryTime,omitempty"`
 	DeliveryRadius    float64 `bson:"deliveryRadius,omitempty" json:"deliveryRadius,omitempty"`
+	UserName          string  `bson:"userName,omitempty" json:"userName,omitempty"`
 	Password          string  `bson:"password,omitempty" json:"password,omitempty"`
+	IsFinalPassword   bool    `bson:"isFinalPassword,omitempty" json:"isFinalPassword,omitempty"`
 }
 
 func GetRestaurantColl(databaseName string) *mongo.Collection {
@@ -42,7 +44,7 @@ func GetRestaurantColl(databaseName string) *mongo.Collection {
 
 func InitRestaurantModel(databaseName string) {
 	GetRestaurantColl(databaseName).Indexes().CreateOne(context.Background(), mongo.IndexModel{
-		Keys:    bson.D{{Key: "url", Value: 1}},
+		Keys:    bson.D{{Key: "userName", Value: 1}},
 		Options: options.Index().SetUnique(true),
 	})
 }
