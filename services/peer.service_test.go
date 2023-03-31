@@ -25,6 +25,7 @@ func initTest() (*PeerService, *mocks.PeerRepositoryMock) {
 	if err != nil {
 		log.Fatal("Error loading .env file")
 	}
+	os.Setenv("INITIAL_PEER", "http://test.com")
 	repo := mocks.NewPeerRepository()
 	geo := mocks.NewGeo()
 	return NewPeerService(repo, geo), repo
@@ -272,11 +273,13 @@ func TestSendNewPeer(t *testing.T) {
 	}
 
 	tests := []struct {
-		Body types.PeerPresentationBody
-		Url  string
-		Err  error
+		Title string
+		Body  types.PeerPresentationBody
+		Url   string
+		Err   error
 	}{
 		{
+			"test1",
 			types.PeerPresentationBody{
 				NewPeer: newPeer,
 				SendTo: []string{
@@ -287,6 +290,7 @@ func TestSendNewPeer(t *testing.T) {
 			nil,
 		},
 		{
+			"test2",
 			types.PeerPresentationBody{
 				NewPeer: newPeer,
 				SendTo:  []string{},
@@ -295,6 +299,7 @@ func TestSendNewPeer(t *testing.T) {
 			errors.New("Send to is empty"),
 		},
 		{
+			"test3",
 			types.PeerPresentationBody{
 				NewPeer: newPeer,
 				SendTo:  []string{"https://test.com", "http://test2.com"},
@@ -325,15 +330,15 @@ func TestSendNewPeer(t *testing.T) {
 	for i, test := range tests {
 		err := test.Err
 		if err == nil && result[i] != nil {
-			t.Errorf("expecting: %s\n got: %s\n", err, result[i].Error())
+			t.Errorf("Not expecting error on test: %s\n expecting: %s\n got: %s\n", test.Title, err, result[i].Error())
 		}
 
 		if err != nil && result[i] == nil {
-			t.Errorf("expecting: %s\n got: %s\n", err.Error(), result[i])
+			t.Errorf("Expecting error on test: %s\n expecting: %s\n got: %s\n", test.Title, err.Error(), result[i])
 		}
 
 		if err != nil && result[i] != nil && err.Error() != result[i].Error() {
-			t.Errorf("expecting: %s\n got: %s\n", err.Error(), result[i].Error())
+			t.Errorf("Different error expected on test: %s\n expecting: %s\n got: %s\n", test.Title, err.Error(), result[i].Error())
 		}
 	}
 

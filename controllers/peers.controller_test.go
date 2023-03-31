@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"log"
 	"net/http/httptest"
-	"os"
 	"reflect"
 	"strings"
 	"sync"
@@ -81,27 +80,7 @@ func TestPeerPresentation(t *testing.T) {
 			},
 			Status: 200,
 			ServiceCallas: map[string][][]interface{}{
-				"AddNewPeer":    {{basePeer}},
-				"GetNewSendMap": {{[]string{basePeer.Url, os.Getenv("HOST")}, make(map[string][]string)}},
-				"SendNewPeer": {{
-					types.PeerPresentationBody{
-						NewPeer: basePeer,
-						SendTo:  []string{"http://tests2.com", "http://tests3.com"},
-					},
-					"http://tests1.com",
-					make(chan error),
-					&wg1,
-				},
-					{
-						types.PeerPresentationBody{
-							NewPeer: basePeer,
-							SendTo:  []string{"http://tests5.com", "http://tests6.com"},
-						},
-						"http://tests4.com",
-						make(chan error),
-						&wg2,
-					},
-				},
+				"AddNewPeer": {{basePeer}},
 			},
 		},
 		{
