@@ -63,7 +63,7 @@ func (p *PeerRepositoryMock) GetById(id primitive.ObjectID) (models.Peer, error)
 	return models.Peer{
 		Id:              id,
 		Url:             "http://tests.com",
-		Center:          models.Center{Long: 11, Lat: 11},
+		Center:          models.GeoCords{Long: 11, Lat: 11},
 		City:            "test city",
 		Country:         "test country",
 		InfluenceRadius: 2,
@@ -76,7 +76,7 @@ func (p *PeerRepositoryMock) GetAll(excludesUrls []string) ([]models.Peer, error
 	peer := models.Peer{
 		Id:              primitive.NilObjectID,
 		Url:             "http://tests.com",
-		Center:          models.Center{Long: 11, Lat: 11},
+		Center:          models.GeoCords{Long: 11, Lat: 11},
 		City:            "test city",
 		Country:         "test country",
 		InfluenceRadius: 2,
@@ -96,7 +96,7 @@ func (p *PeerRepositoryMock) GetSelf() (models.Peer, error) {
 	return models.Peer{
 		Id:              primitive.NilObjectID,
 		Url:             os.Getenv("HOST"),
-		Center:          models.Center{Long: long, Lat: lat},
+		Center:          models.GeoCords{Long: long, Lat: lat},
 		City:            os.Getenv("CITY"),
 		Country:         os.Getenv("COUNTRY"),
 		InfluenceRadius: 2,

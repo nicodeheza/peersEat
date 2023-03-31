@@ -10,7 +10,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-type Center struct {
+type GeoCords struct {
 	Long float64 `validate:"required"`
 	Lat  float64 `validate:"required"`
 }
@@ -18,7 +18,7 @@ type Center struct {
 type Peer struct {
 	Id                  primitive.ObjectID   `bson:"_id,omitempty" json:"id,omitempty"`
 	Url                 string               `bson:"url" json:"url" validate:"required,url"`
-	Center              Center               `validate:"dive"`
+	Center              GeoCords             `validate:"dive"`
 	City                string               `bson:"city,omitempty" json:"city,omitempty" validate:"required"`
 	Country             string               `bson:"country,omitempty" json:"country,omitempty" validate:"required"`
 	InfluenceRadius     float64              `bson:"influence_radius,omitempty" json:"influence_radius,omitempty"`

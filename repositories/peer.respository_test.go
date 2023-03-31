@@ -39,7 +39,7 @@ func TestInsertAndFindById(t *testing.T) {
 
 	newPeer := models.Peer{
 		Url:             "http://tests.com",
-		Center:          models.Center{Long: 99.0, Lat: 99.0},
+		Center:          models.GeoCords{Long: 99.0, Lat: 99.0},
 		City:            "test city",
 		Country:         "test country",
 		InfluenceRadius: 1,
@@ -72,7 +72,7 @@ func TestInsertManyAndGetAll(t *testing.T) {
 
 	newPeer1 := models.Peer{
 		Url:             "http://tests1.com",
-		Center:          models.Center{Long: 11.0, Lat: 11.0},
+		Center:          models.GeoCords{Long: 11.0, Lat: 11.0},
 		City:            "test city1",
 		Country:         "test country1",
 		InfluenceRadius: 1,
@@ -80,7 +80,7 @@ func TestInsertManyAndGetAll(t *testing.T) {
 	}
 	newPeer2 := models.Peer{
 		Url:             "http://tests2.com",
-		Center:          models.Center{Long: 22.0, Lat: 22.0},
+		Center:          models.GeoCords{Long: 22.0, Lat: 22.0},
 		City:            "test city2",
 		Country:         "test country2",
 		InfluenceRadius: 2,
@@ -88,7 +88,7 @@ func TestInsertManyAndGetAll(t *testing.T) {
 	}
 	newPeer3 := models.Peer{
 		Url:             "http://tests3.com",
-		Center:          models.Center{Long: 33.0, Lat: 33.0},
+		Center:          models.GeoCords{Long: 33.0, Lat: 33.0},
 		City:            "test city3",
 		Country:         "test country3",
 		InfluenceRadius: 4,
@@ -96,7 +96,7 @@ func TestInsertManyAndGetAll(t *testing.T) {
 	}
 	newPeer4 := models.Peer{
 		Url:             "http://tests4.com",
-		Center:          models.Center{Long: 44.0, Lat: 44.0},
+		Center:          models.GeoCords{Long: 44.0, Lat: 44.0},
 		City:            "test city4",
 		Country:         "test country4",
 		InfluenceRadius: 5,
@@ -150,7 +150,7 @@ func TestGetSelf(t *testing.T) {
 
 	selfPeer := models.Peer{
 		Url:             os.Getenv("HOST"),
-		Center:          models.Center{Long: long, Lat: lat},
+		Center:          models.GeoCords{Long: long, Lat: lat},
 		City:            os.Getenv("CITY"),
 		Country:         os.Getenv("COUNTRY"),
 		InfluenceRadius: 1,
@@ -182,7 +182,7 @@ func TestUpdate(t *testing.T) {
 
 	peer := models.Peer{
 		Url:             "http://tests.com",
-		Center:          models.Center{Long: 99.0, Lat: 99.0},
+		Center:          models.GeoCords{Long: 99.0, Lat: 99.0},
 		City:            "test city",
 		Country:         "test country",
 		InfluenceRadius: 1,
@@ -201,7 +201,7 @@ func TestUpdate(t *testing.T) {
 		t.Error("Update should throw and error")
 	}
 
-	peer.Center = models.Center{Long: 11.0, Lat: 11.0}
+	peer.Center = models.GeoCords{Long: 11.0, Lat: 11.0}
 	peer.City = "cityUpdated"
 
 	err = peerRepository.Update(peer, []string{"Center", "City"})
@@ -227,7 +227,7 @@ func TestGetAllUrls(t *testing.T) {
 
 	newPeer1 := models.Peer{
 		Url:             "http://tests1.com",
-		Center:          models.Center{Long: 11.0, Lat: 11.0},
+		Center:          models.GeoCords{Long: 11.0, Lat: 11.0},
 		City:            "test city1",
 		Country:         "test country1",
 		InfluenceRadius: 1,
@@ -235,7 +235,7 @@ func TestGetAllUrls(t *testing.T) {
 	}
 	newPeer2 := models.Peer{
 		Url:             "http://tests2.com",
-		Center:          models.Center{Long: 22.0, Lat: 22.0},
+		Center:          models.GeoCords{Long: 22.0, Lat: 22.0},
 		City:            "test city2",
 		Country:         "test country2",
 		InfluenceRadius: 2,
@@ -243,7 +243,7 @@ func TestGetAllUrls(t *testing.T) {
 	}
 	newPeer3 := models.Peer{
 		Url:             "http://tests3.com",
-		Center:          models.Center{Long: 33.0, Lat: 33.0},
+		Center:          models.GeoCords{Long: 33.0, Lat: 33.0},
 		City:            "test city3",
 		Country:         "test country3",
 		InfluenceRadius: 4,
@@ -251,7 +251,7 @@ func TestGetAllUrls(t *testing.T) {
 	}
 	newPeer4 := models.Peer{
 		Url:             "http://tests4.com",
-		Center:          models.Center{Long: 44.0, Lat: 44.0},
+		Center:          models.GeoCords{Long: 44.0, Lat: 44.0},
 		City:            "test city4",
 		Country:         "test country4",
 		InfluenceRadius: 5,

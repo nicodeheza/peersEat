@@ -46,7 +46,7 @@ func TestInitPeer(t *testing.T) {
 		allPeers = append(allPeers, models.Peer{
 			Id:              primitive.NewObjectIDFromTimestamp(time.Now()),
 			Url:             fmt.Sprintf("http://test%d.com", i),
-			Center:          models.Center{Long: float64(i), Lat: float64(i)},
+			Center:          models.GeoCords{Long: float64(i), Lat: float64(i)},
 			City:            fmt.Sprintf("City%d", i),
 			Country:         fmt.Sprintf("Country%d", i),
 			InfluenceRadius: float64(i),
@@ -91,7 +91,7 @@ func TestAddNewPeer(t *testing.T) {
 
 	basePeer := models.Peer{
 		Url:             "test",
-		Center:          models.Center{Long: 0, Lat: 0},
+		Center:          models.GeoCords{Long: 0, Lat: 0},
 		City:            os.Getenv("CITY"),
 		Country:         os.Getenv("COUNTRY"),
 		InfluenceRadius: 0,

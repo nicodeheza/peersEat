@@ -54,7 +54,7 @@ func TestPeerPresentation(t *testing.T) {
 
 	basePeer := models.Peer{
 		Url:             "http://test.com",
-		Center:          models.Center{Long: 1, Lat: 1},
+		Center:          models.GeoCords{Long: 1, Lat: 1},
 		City:            "test",
 		Country:         "test",
 		InfluenceRadius: 2,

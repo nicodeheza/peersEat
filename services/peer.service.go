@@ -45,7 +45,7 @@ func (p *PeerService) InitPeer() {
 
 	selfPeer := models.Peer{
 		Url:     os.Getenv("HOST"),
-		Center:  models.Center{Long: long, Lat: lat},
+		Center:  models.GeoCords{Long: long, Lat: lat},
 		City:    os.Getenv("CITY"),
 		Country: os.Getenv("COUNTRY"),
 	}

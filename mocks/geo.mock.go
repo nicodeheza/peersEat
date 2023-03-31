@@ -6,34 +6,33 @@ import (
 
 type GeoService struct{}
 
-func NewGeo() *GeoService{
+func NewGeo() *GeoService {
 	return &GeoService{}
 }
 
-func (g *GeoService) GetCoorDistance(coor1 models.Center, coor2 models.Center) float64{
+func (g *GeoService) GetCoorDistance(coor1 models.GeoCords, coor2 models.GeoCords) float64 {
 	return coor1.Long
 }
 
-func (g *GeoService) IsSameCoor( coor1 models.Center, coor2 models.Center) bool {
+func (g *GeoService) IsSameCoor(coor1 models.GeoCords, coor2 models.GeoCords) bool {
 	if coor1.Lat == coor2.Lat &&
-	 coor1.Long == coor2.Long{
+		coor1.Long == coor2.Long {
 		return true
 	}
 
 	return false
 }
 
-func (g *GeoService) IsInInfluenceArea(selfPeer models.Peer, peer models.Peer) bool{
-	if peer.InfluenceRadius == 1{
+func (g *GeoService) IsInInfluenceArea(selfPeer models.Peer, peer models.Peer) bool {
+	if peer.InfluenceRadius == 1 {
 		return true
 	}
 	return false
 }
 
-func (g *GeoService) IsInDeliveryArea(selfPeer models.Peer, peer models.Peer) bool{
-	if peer.DeliveryRadius == 1{
+func (g *GeoService) IsInDeliveryArea(selfPeer models.Peer, peer models.Peer) bool {
+	if peer.DeliveryRadius == 1 {
 		return true
 	}
 	return false
 }
-
