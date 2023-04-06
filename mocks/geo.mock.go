@@ -2,7 +2,9 @@ package mocks
 
 import (
 	"errors"
+	"math"
 
+	"github.com/nicodeheza/peersEat/constants"
 	"github.com/nicodeheza/peersEat/models"
 )
 
@@ -22,6 +24,21 @@ func (g *GeoService) IsSameCoord(coord1 models.GeoCoords, coord2 models.GeoCoord
 		return true
 	}
 
+	return false
+}
+
+// update
+func (g *GeoService) IsInInfluenceArea(peerCenter, geoPoint models.GeoCoords) bool {
+	if g.IsSameCoord(peerCenter, geoPoint) {
+		return true
+	}
+
+	peerDis := g.GetCoordDistance(peerCenter, geoPoint)
+	peerDis = math.Abs(peerDis)
+
+	if peerDis <= constants.INFLUENCE_RADIUS {
+		return true
+	}
 	return false
 }
 

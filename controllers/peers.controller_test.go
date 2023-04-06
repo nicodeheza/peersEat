@@ -16,6 +16,7 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/nicodeheza/peersEat/mocks"
 	"github.com/nicodeheza/peersEat/models"
+	"github.com/nicodeheza/peersEat/services"
 	"github.com/nicodeheza/peersEat/services/validations"
 	"github.com/nicodeheza/peersEat/types"
 )
@@ -28,7 +29,8 @@ func initTest() (*PeerController, *mocks.PeerServiceMock, *fiber.App) {
 
 	service := mocks.NewPeerServiceMock()
 	validate := validations.NewValidator(validator.New())
-	peerController := NewPeerController(service, validate)
+	restaurantService := services.RestaurantService{}
+	peerController := NewPeerController(service, validate, &restaurantService)
 	app := fiber.New()
 
 	return peerController, service, app

@@ -16,12 +16,13 @@ type PeerControllerI interface {
 }
 
 type PeerController struct {
-	service  services.PeerServiceI
-	validate validations.ValidateI
+	service     services.PeerServiceI
+	validate    validations.ValidateI
+	restaurants services.RestaurantServiceI
 }
 
-func NewPeerController(service services.PeerServiceI, validate validations.ValidateI) *PeerController {
-	return &PeerController{service, validate}
+func NewPeerController(service services.PeerServiceI, validate validations.ValidateI, restaurants services.RestaurantServiceI) *PeerController {
+	return &PeerController{service, validate, restaurants}
 }
 
 type peerPresentationBody struct {
@@ -92,6 +93,12 @@ func (p *PeerController) SendAllPeers(c *fiber.Ctx) error {
 }
 
 func (p *PeerController) AddNewRestaurant(c *fiber.Ctx) error {
+
+	newRestaurant := models.Restaurant{}
+	err := c.BodyParser(newRestaurant)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"message": err.Error()})
+	}
 
 	// get restaurant
 	// complete data ✅

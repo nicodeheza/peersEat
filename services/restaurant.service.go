@@ -14,6 +14,11 @@ type RestaurantService struct {
 	geo         geo.GeoServiceI
 }
 
+type RestaurantServiceI interface {
+	CompleteRestaurantInitialData(newRestaurant *models.Restaurant) error
+	AddNewRestaurant(newRestaurant models.Restaurant) (primitive.ObjectID, error)
+}
+
 func NewRestaurantService(repository repositories.RestaurantRepositoryI, authHelpers utils.AuthHelpersI, geo geo.GeoServiceI) *RestaurantService {
 	return &RestaurantService{repository, authHelpers, geo}
 }

@@ -17,11 +17,11 @@ type PeerModule struct {
 	Controllers controllers.PeerControllerI
 }
 
-func newPeerModule(validate validations.ValidateI, geo geo.GeoServiceI) *PeerModule{
+func newPeerModule(validate validations.ValidateI, geo geo.GeoServiceI, restaurants services.RestaurantServiceI) *PeerModule {
 	peerCollection := models.GetPeerColl("peersEatDB")
 	peerRepository := repositories.NewPeerRepository(peerCollection)
 	peerService := services.NewPeerService(peerRepository, geo)
-	peerControllers := controllers.NewPeerController(peerService, validate)
+	peerControllers := controllers.NewPeerController(peerService, validate, restaurants)
 	return &PeerModule{
 		peerCollection,
 		peerRepository,

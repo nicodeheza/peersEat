@@ -17,6 +17,7 @@ type GeoService struct{}
 type GeoServiceI interface {
 	GetCoordDistance(coord1 models.GeoCoords, coord2 models.GeoCoords) float64
 	IsSameCoord(coord1 models.GeoCoords, coord2 models.GeoCoords) bool
+	IsInInfluenceArea(peerCenter, geoPoint models.GeoCoords) bool
 	AreInfluenceAreasOverlaying(selfPeer models.Peer, peer models.Peer) bool
 	IsInDeliveryArea(selfPeer models.Peer, peer models.Peer) bool
 	GetAddressCoords(address, city, country string) (models.GeoCoords, error)
@@ -56,8 +57,20 @@ func (g *GeoService) IsSameCoord(coord1 models.GeoCoords, coord2 models.GeoCoord
 	return false
 }
 
-// create new isInInfluenceArea
-// rename to AreInfluenceAreasOverlaying
+func (g *GeoService) IsInInfluenceArea(peerCenter, geoPoint models.GeoCoords) bool {
+	if g.IsSameCoord(peerCenter, geoPoint) {
+		return true
+	}
+
+	peerDis := g.GetCoordDistance(peerCenter, geoPoint)
+	peerDis = math.Abs(peerDis)
+
+	if peerDis <= constants.INFLUENCE_RADIUS {
+		return true
+	}
+	return false
+}
+
 func (g *GeoService) AreInfluenceAreasOverlaying(selfPeer models.Peer, peer models.Peer) bool {
 	if g.IsSameCoord(selfPeer.Center, peer.Center) {
 		return true

@@ -18,7 +18,7 @@ type AuthHelpersI interface {
 
 type AuthHelpers struct{}
 
-func New() *AuthHelpers {
+func NewAuthHelper() *AuthHelpers {
 	return &AuthHelpers{}
 }
 
