@@ -21,7 +21,7 @@ func newPeerModule(validate validations.ValidateI, geo geo.GeoServiceI, restaura
 	peerCollection := models.GetPeerColl("peersEatDB")
 	peerRepository := repositories.NewPeerRepository(peerCollection)
 	peerService := services.NewPeerService(peerRepository, geo)
-	peerControllers := controllers.NewPeerController(peerService, validate, restaurants)
+	peerControllers := controllers.NewPeerController(peerService, validate, restaurants, geo)
 	return &PeerModule{
 		peerCollection,
 		peerRepository,

@@ -6,6 +6,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/nicodeheza/peersEat/models"
 	"github.com/nicodeheza/peersEat/services"
+	"github.com/nicodeheza/peersEat/services/geo"
 	"github.com/nicodeheza/peersEat/services/validations"
 	"github.com/nicodeheza/peersEat/types"
 )
@@ -19,10 +20,11 @@ type PeerController struct {
 	service     services.PeerServiceI
 	validate    validations.ValidateI
 	restaurants services.RestaurantServiceI
+	geo         geo.GeoServiceI
 }
 
-func NewPeerController(service services.PeerServiceI, validate validations.ValidateI, restaurants services.RestaurantServiceI) *PeerController {
-	return &PeerController{service, validate, restaurants}
+func NewPeerController(service services.PeerServiceI, validate validations.ValidateI, restaurants services.RestaurantServiceI, geo geo.GeoServiceI) *PeerController {
+	return &PeerController{service, validate, restaurants, geo}
 }
 
 type peerPresentationBody struct {
@@ -99,10 +101,25 @@ func (p *PeerController) AddNewRestaurant(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"message": err.Error()})
 	}
+	err = p.restaurants.CompleteRestaurantInitialData(&newRestaurant)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"message": err.Error()})
+	}
 
-	// get restaurant
+	self, err := p.service.GetLocalPeer()
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"message": err.Error()})
+	}
+
+	isInInfluenceArea := p.geo.IsInInfluenceArea(self.Center, newRestaurant.Coord)
+
+	if !isInInfluenceArea {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"message": "restaurant out of area"})
+	}
+
+	// get restaurant ✅
 	// complete data ✅
-	// validate is in influence area ⬅
+	// validate is in influence area ✅
 	// validate is unique (others peers)
 	// save restaurant ✅
 	// return restaurant

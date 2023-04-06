@@ -87,3 +87,7 @@ func (p *PeerServiceMock) AllPeersToSend(excludeUrls []string) ([]models.Peer, e
 
 	return []models.Peer{peer, peer, peer, peer}, nil
 }
+func (p *PeerServiceMock) GetLocalPeer() (models.Peer, error) {
+	// todo
+	return models.Peer{}, nil
+}

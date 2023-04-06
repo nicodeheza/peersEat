@@ -25,6 +25,7 @@ type PeerServiceI interface {
 	GetNewSendMap(excludes []string, sendMap map[string][]string) error
 	SendNewPeer(body types.PeerPresentationBody, peerUrl string, ch chan<- error, wg *sync.WaitGroup)
 	AllPeersToSend(excludeUrls []string) ([]models.Peer, error)
+	GetLocalPeer() (models.Peer, error)
 }
 
 type PeerService struct {
@@ -214,4 +215,8 @@ func (p *PeerService) SendNewPeer(body types.PeerPresentationBody, peerUrl strin
 
 func (p *PeerService) AllPeersToSend(excludeUrls []string) ([]models.Peer, error) {
 	return p.repo.GetAll(excludeUrls)
+}
+
+func (p *PeerService) GetLocalPeer() (models.Peer, error) {
+	return p.repo.GetSelf()
 }
