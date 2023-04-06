@@ -1,6 +1,8 @@
 package mocks
 
 import (
+	"errors"
+
 	"github.com/nicodeheza/peersEat/models"
 )
 
@@ -10,21 +12,21 @@ func NewGeo() *GeoService {
 	return &GeoService{}
 }
 
-func (g *GeoService) GetCoorDistance(coor1 models.GeoCords, coor2 models.GeoCords) float64 {
-	return coor1.Long
+func (g *GeoService) GetCoordDistance(coord1 models.GeoCoords, coord2 models.GeoCoords) float64 {
+	return coord1.Long
 }
 
-func (g *GeoService) IsSameCoor(coor1 models.GeoCords, coor2 models.GeoCords) bool {
-	if coor1.Lat == coor2.Lat &&
-		coor1.Long == coor2.Long {
+func (g *GeoService) IsSameCoord(coord1 models.GeoCoords, coord2 models.GeoCoords) bool {
+	if coord1.Lat == coord2.Lat &&
+		coord1.Long == coord2.Long {
 		return true
 	}
 
 	return false
 }
 
-func (g *GeoService) IsInInfluenceArea(selfPeer models.Peer, peer models.Peer) bool {
-	if peer.InfluenceRadius == 1 {
+func (g *GeoService) AreInfluenceAreasOverlaying(selfPeer models.Peer, peer models.Peer) bool {
+	if peer.DeliveryRadius == 2 {
 		return true
 	}
 	return false
@@ -35,4 +37,12 @@ func (g *GeoService) IsInDeliveryArea(selfPeer models.Peer, peer models.Peer) bo
 		return true
 	}
 	return false
+}
+
+func (g *GeoService) GetAddressCoords(address, city, country string) (models.GeoCoords, error) {
+	if address == "error" {
+		return models.GeoCoords{}, errors.New("test error")
+	}
+
+	return models.GeoCoords{Long: 1.1, Lat: 2.2}, nil
 }

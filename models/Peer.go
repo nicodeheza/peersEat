@@ -10,7 +10,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-type GeoCords struct {
+type GeoCoords struct {
 	Long float64 `validate:"required"`
 	Lat  float64 `validate:"required"`
 }
@@ -18,10 +18,9 @@ type GeoCords struct {
 type Peer struct {
 	Id                  primitive.ObjectID   `bson:"_id,omitempty" json:"id,omitempty"`
 	Url                 string               `bson:"url" json:"url" validate:"required,url"`
-	Center              GeoCords             `validate:"dive"`
+	Center              GeoCoords            `validate:"dive"`
 	City                string               `bson:"city,omitempty" json:"city,omitempty" validate:"required"`
 	Country             string               `bson:"country,omitempty" json:"country,omitempty" validate:"required"`
-	InfluenceRadius     float64              `bson:"influence_radius,omitempty" json:"influence_radius,omitempty"`
 	DeliveryRadius      float64              `bson:"delivery_radius,omitempty" json:"delivery_radius,omitempty"`
 	InAreaPeers         []primitive.ObjectID `bson:"in_area_peers,omitempty" json:"in_area_peers,omitempty"`
 	InDeliveryAreaPeers []primitive.ObjectID `bson:"in_area_delivery_peers,omitempty" json:"in_area_delivery_peers,omitempty"`

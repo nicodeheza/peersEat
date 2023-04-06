@@ -90,3 +90,15 @@ func (p *PeerController) SendAllPeers(c *fiber.Ctx) error {
 
 	return c.Status(fiber.StatusOK).JSON(peers)
 }
+
+func (p *PeerController) AddNewRestaurant(c *fiber.Ctx) error {
+
+	// get restaurant
+	// complete data ✅
+	// validate is in influence area ⬅
+	// validate is unique (others peers)
+	// save restaurant ✅
+	// return restaurant
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{"message": "ok"})
+}

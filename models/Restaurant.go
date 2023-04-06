@@ -21,7 +21,7 @@ type Restaurant struct {
 	Address           string
 	City              string
 	Country           string
-	Cord              GeoCords
+	Coord             GeoCoords
 	IsConnected       bool    `bson:"isConnected,omitempty" json:"isConnected,omitempty"`
 	Menu              Menu    `bson:"menu,omitempty" json:"menu,omitempty"`
 	OpenTime          string  `bson:"openTime,omitempty" json:"openTime,omitempty"`

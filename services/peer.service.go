@@ -45,7 +45,7 @@ func (p *PeerService) InitPeer() {
 
 	selfPeer := models.Peer{
 		Url:     os.Getenv("HOST"),
-		Center:  models.GeoCords{Long: long, Lat: lat},
+		Center:  models.GeoCoords{Long: long, Lat: lat},
 		City:    os.Getenv("CITY"),
 		Country: os.Getenv("COUNTRY"),
 	}
@@ -126,7 +126,7 @@ func (p *PeerService) AddNewPeer(newPeer models.Peer) error {
 
 	// do it concurrent?
 	updatedFields := []string{}
-	if p.geo.IsInInfluenceArea(selfPeer, newPeer) {
+	if p.geo.AreInfluenceAreasOverlaying(selfPeer, newPeer) {
 		selfPeer.InAreaPeers = append(selfPeer.InAreaPeers, id)
 		updatedFields = append(updatedFields, "InAreaPeers")
 	}

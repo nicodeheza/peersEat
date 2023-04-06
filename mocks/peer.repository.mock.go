@@ -61,26 +61,24 @@ func (p *PeerRepositoryMock) InsertMany(peers []models.Peer) (ids []primitive.Ob
 func (p *PeerRepositoryMock) GetById(id primitive.ObjectID) (models.Peer, error) {
 	p.GetByIdCalls = append(p.GetByIdCalls, id)
 	return models.Peer{
-		Id:              id,
-		Url:             "http://tests.com",
-		Center:          models.GeoCords{Long: 11, Lat: 11},
-		City:            "test city",
-		Country:         "test country",
-		InfluenceRadius: 2,
-		DeliveryRadius:  3,
+		Id:             id,
+		Url:            "http://tests.com",
+		Center:         models.GeoCoords{Long: 11, Lat: 11},
+		City:           "test city",
+		Country:        "test country",
+		DeliveryRadius: 3,
 	}, nil
 }
 
 func (p *PeerRepositoryMock) GetAll(excludesUrls []string) ([]models.Peer, error) {
 	p.GetAllCalls = append(p.GetAllCalls, excludesUrls)
 	peer := models.Peer{
-		Id:              primitive.NilObjectID,
-		Url:             "http://tests.com",
-		Center:          models.GeoCords{Long: 11, Lat: 11},
-		City:            "test city",
-		Country:         "test country",
-		InfluenceRadius: 2,
-		DeliveryRadius:  3,
+		Id:             primitive.NilObjectID,
+		Url:            "http://tests.com",
+		Center:         models.GeoCoords{Long: 11, Lat: 11},
+		City:           "test city",
+		Country:        "test country",
+		DeliveryRadius: 3,
 	}
 
 	return []models.Peer{peer, peer, peer}, nil
@@ -94,13 +92,12 @@ func (p *PeerRepositoryMock) GetSelf() (models.Peer, error) {
 		return models.Peer{}, err
 	}
 	return models.Peer{
-		Id:              primitive.NilObjectID,
-		Url:             os.Getenv("HOST"),
-		Center:          models.GeoCords{Long: long, Lat: lat},
-		City:            os.Getenv("CITY"),
-		Country:         os.Getenv("COUNTRY"),
-		InfluenceRadius: 2,
-		DeliveryRadius:  4,
+		Id:             primitive.NilObjectID,
+		Url:            os.Getenv("HOST"),
+		Center:         models.GeoCoords{Long: long, Lat: lat},
+		City:           os.Getenv("CITY"),
+		Country:        os.Getenv("COUNTRY"),
+		DeliveryRadius: 4,
 	}, nil
 }
 

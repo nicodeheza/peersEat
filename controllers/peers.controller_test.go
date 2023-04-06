@@ -53,12 +53,11 @@ func TestPeerPresentation(t *testing.T) {
 	sendTo := []string{"http://tests1.com", "http://tests2.com", "http://tests3.com", "http://tests4.com", "http://tests5.com", "http://tests6.com"}
 
 	basePeer := models.Peer{
-		Url:             "http://test.com",
-		Center:          models.GeoCords{Long: 1, Lat: 1},
-		City:            "test",
-		Country:         "test",
-		InfluenceRadius: 2,
-		DeliveryRadius:  3,
+		Url:            "http://test.com",
+		Center:         models.GeoCoords{Long: 1, Lat: 1},
+		City:           "test",
+		Country:        "test",
+		DeliveryRadius: 3,
 	}
 	tests := []Test{
 		{

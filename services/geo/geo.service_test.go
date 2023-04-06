@@ -2,14 +2,15 @@ package geo
 
 import (
 	"math"
+	"reflect"
 	"testing"
 
 	"github.com/nicodeheza/peersEat/models"
 )
 
 type GetCoorDistanceTests struct {
-	Coor1  models.GeoCords
-	Coor2  models.GeoCords
+	Coor1  models.GeoCoords
+	Coor2  models.GeoCoords
 	result float64
 }
 
@@ -17,24 +18,24 @@ func TestGetCoorDistance(t *testing.T) {
 	g := NewGeo()
 	tests := []GetCoorDistanceTests{
 		{
-			models.GeoCords{Long: -36.0233352, Lat: -61.2301026},
-			models.GeoCords{Long: -36.1414237, Lat: -59.7854004},
+			models.GeoCoords{Long: -36.0233352, Lat: -61.2301026},
+			models.GeoCoords{Long: -36.1414237, Lat: -59.7854004},
 			160.765761,
 		},
 		{
-			models.GeoCords{Long: 54.4828045, Lat: -312.1237794},
-			models.GeoCords{Long: 54.4904641, Lat: -311.7656207},
+			models.GeoCoords{Long: 54.4828045, Lat: -312.1237794},
+			models.GeoCoords{Long: 54.4904641, Lat: -311.7656207},
 			39.827583,
 		},
 		{
-			models.GeoCords{Long: 54.8380309, Lat: -476.8637697},
-			models.GeoCords{Long: 54.8194413, Lat: -476.8588257},
+			models.GeoCoords{Long: 54.8380309, Lat: -476.8637697},
+			models.GeoCoords{Long: 54.8194413, Lat: -476.8588257},
 			1.083700,
 		},
 	}
 
 	for _, test := range tests {
-		result := g.GetCoorDistance(test.Coor1, test.Coor2)
+		result := g.GetCoordDistance(test.Coor1, test.Coor2)
 		dif := math.Abs(result - test.result)
 		if dif > 0.001 {
 			t.Errorf("expect %f but gets %f for %f, %f - %f, %f",
@@ -45,8 +46,8 @@ func TestGetCoorDistance(t *testing.T) {
 }
 
 type IsSameCoorTest struct {
-	Coor1  models.GeoCords
-	Coor2  models.GeoCords
+	Coor1  models.GeoCoords
+	Coor2  models.GeoCoords
 	result bool
 }
 
@@ -54,19 +55,19 @@ func TestIsSameCoor(t *testing.T) {
 	g := NewGeo()
 	tests := []IsSameCoorTest{
 		{
-			models.GeoCords{Long: -36.0233352, Lat: -61.2301026},
-			models.GeoCords{Long: -36.0233352, Lat: -59.7854004},
+			models.GeoCoords{Long: -36.0233352, Lat: -61.2301026},
+			models.GeoCoords{Long: -36.0233352, Lat: -59.7854004},
 			false,
 		},
 		{
-			models.GeoCords{Long: 54.4828045, Lat: -312.1237794},
-			models.GeoCords{Long: 54.4828045, Lat: -312.1237794},
+			models.GeoCoords{Long: 54.4828045, Lat: -312.1237794},
+			models.GeoCoords{Long: 54.4828045, Lat: -312.1237794},
 			true,
 		},
 	}
 	for _, test := range tests {
 
-		result := g.IsSameCoor(test.Coor1, test.Coor2)
+		result := g.IsSameCoord(test.Coor1, test.Coor2)
 
 		if result != test.result {
 			t.Errorf("expect %t, but gets %t on (%v, %v)",
@@ -87,23 +88,22 @@ func TestIsInInfluenceArea(t *testing.T) {
 
 	basePeer := models.Peer{
 		Url:     "http://test.com",
-		Center:  models.GeoCords{Long: -36.0233352, Lat: -61.2301026},
+		Center:  models.GeoCoords{Long: -36.0233352, Lat: -61.2301026},
 		City:    "test city",
 		Country: "test country",
 	}
 	peer1 := basePeer
-	peer1.Center = models.GeoCords{Long: -32.0233352, Lat: -61.2301026}
+	peer1.Center = models.GeoCoords{Long: -32.0233352, Lat: -61.2301026}
 
 	peer2 := basePeer
-	peer2.InfluenceRadius = 1
 	peer2.DeliveryRadius = 2
-	peer2.Center = models.GeoCords{Long: -34.605447, Lat: -58.383594}
+	peer2.Center = models.GeoCoords{Long: -34.605447, Lat: -58.383594}
 
 	peer3 := peer2
-	peer3.Center = models.GeoCords{Long: -34.605341, Lat: -58.386598}
+	peer3.Center = models.GeoCoords{Long: -34.605341, Lat: -58.386598}
 
 	peer4 := peer2
-	peer4.Center = models.GeoCords{Long: -34.606716, Lat: -58.470303}
+	peer4.Center = models.GeoCoords{Long: -34.606716, Lat: -58.470303}
 	tests := []IsInInfluenceAreaTest{
 		{
 			basePeer,
@@ -128,7 +128,7 @@ func TestIsInInfluenceArea(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		result := g.IsInInfluenceArea(test.SelfPeer, test.Peer)
+		result := g.AreInfluenceAreasOverlaying(test.SelfPeer, test.Peer)
 
 		if result != test.result {
 			t.Errorf("expect %t but gets %t for (%v, %v)", test.result, result, test.SelfPeer, test.Peer)
@@ -141,23 +141,22 @@ func TestIsInDeliveryArea(t *testing.T) {
 
 	basePeer := models.Peer{
 		Url:     "http://test.com",
-		Center:  models.GeoCords{Long: -36.0233352, Lat: -61.2301026},
+		Center:  models.GeoCoords{Long: -36.0233352, Lat: -61.2301026},
 		City:    "test city",
 		Country: "test country",
 	}
 	peer1 := basePeer
-	peer1.Center = models.GeoCords{Long: -32.0233352, Lat: -61.2301026}
+	peer1.Center = models.GeoCoords{Long: -32.0233352, Lat: -61.2301026}
 
 	peer2 := basePeer
-	peer2.InfluenceRadius = 1
 	peer2.DeliveryRadius = 2
-	peer2.Center = models.GeoCords{Long: -34.605447, Lat: -58.383594}
+	peer2.Center = models.GeoCoords{Long: -34.605447, Lat: -58.383594}
 
 	peer3 := peer2
-	peer3.Center = models.GeoCords{Long: -34.605341, Lat: -58.386598}
+	peer3.Center = models.GeoCoords{Long: -34.605341, Lat: -58.386598}
 
 	peer4 := peer2
-	peer4.Center = models.GeoCords{Long: -34.606716, Lat: -58.470303}
+	peer4.Center = models.GeoCoords{Long: -34.606716, Lat: -58.470303}
 	tests := []IsInInfluenceAreaTest{
 		{
 			basePeer,
@@ -187,5 +186,20 @@ func TestIsInDeliveryArea(t *testing.T) {
 		if result != test.result {
 			t.Errorf("expect %t but gets %t for (%v, %v)", test.result, result, test.SelfPeer, test.Peer)
 		}
+	}
+}
+
+func TestGetAddressCords(t *testing.T) {
+	g := NewGeo()
+
+	res, err := g.GetAddressCoords("cerrito 800", "Buenos Aires", "Argentina")
+	if err != nil {
+		t.Error(err.Error())
+	}
+
+	expected := models.GeoCoords{Long: -58.3826948, Lat: -34.5992499}
+
+	if !reflect.DeepEqual(expected, res) {
+		t.Errorf("Expected: %v but go: %v", expected, res)
 	}
 }
