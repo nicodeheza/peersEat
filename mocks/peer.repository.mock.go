@@ -112,3 +112,8 @@ func (p *PeerRepositoryMock) GetAllUrls(excludes []string) ([]string, error) {
 
 	return []string{"test1", "test2", "test3", "test4"}, nil
 }
+
+func (p *PeerRepositoryMock) FindUrlsByIds(ids []primitive.ObjectID) ([]string, error) {
+
+	return []string{"http://test1.com", "http://test2.com"}, nil
+}
