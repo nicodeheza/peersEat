@@ -16,6 +16,7 @@ import (
 	"github.com/nicodeheza/peersEat/repositories"
 	"github.com/nicodeheza/peersEat/services/geo"
 	"github.com/nicodeheza/peersEat/types"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type PeerServiceI interface {
@@ -219,4 +220,8 @@ func (p *PeerService) AllPeersToSend(excludeUrls []string) ([]models.Peer, error
 
 func (p *PeerService) GetLocalPeer() (models.Peer, error) {
 	return p.repo.GetSelf()
+}
+
+func (p *PeerService) GetInAreaUrls(ids []primitive.ObjectID) ([]string, error) {
+	return p.repo.FindUrlsByIds(ids)
 }
