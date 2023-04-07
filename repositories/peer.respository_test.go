@@ -17,7 +17,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-func initDb() (*mongo.Collection, *mim.Server) {
+func initPeerDb() (*mongo.Collection, *mim.Server) {
 	err := godotenv.Load("../.env")
 	if err != nil {
 		log.Fatal("Error loading .env file")
@@ -33,7 +33,7 @@ func initDb() (*mongo.Collection, *mim.Server) {
 }
 
 func TestInsertAndFindById(t *testing.T) {
-	coll, server := initDb()
+	coll, server := initPeerDb()
 	defer server.Stop(context.Background())
 
 	peerRepository := PeerRepository{coll}
@@ -65,7 +65,7 @@ func TestInsertAndFindById(t *testing.T) {
 }
 
 func TestInsertManyAndGetAll(t *testing.T) {
-	coll, server := initDb()
+	coll, server := initPeerDb()
 	defer server.Stop(context.Background())
 
 	peerRepository := PeerRepository{coll}
@@ -129,7 +129,7 @@ func TestInsertManyAndGetAll(t *testing.T) {
 }
 
 func TestGetSelf(t *testing.T) {
-	coll, server := initDb()
+	coll, server := initPeerDb()
 	defer server.Stop(context.Background())
 
 	peerRepository := PeerRepository{coll}
@@ -170,7 +170,7 @@ func TestGetSelf(t *testing.T) {
 }
 
 func TestUpdate(t *testing.T) {
-	coll, server := initDb()
+	coll, server := initPeerDb()
 	defer server.Stop(context.Background())
 
 	peerRepository := PeerRepository{coll}
@@ -214,7 +214,7 @@ func TestUpdate(t *testing.T) {
 }
 
 func TestGetAllUrls(t *testing.T) {
-	coll, server := initDb()
+	coll, server := initPeerDb()
 	defer server.Stop(context.Background())
 
 	peerRepository := PeerRepository{coll}
@@ -276,7 +276,7 @@ func TestGetAllUrls(t *testing.T) {
 }
 
 func TestFindUrlsByIds(t *testing.T) {
-	coll, server := initDb()
+	coll, server := initPeerDb()
 	defer server.Stop(context.Background())
 
 	peerRepository := PeerRepository{coll}
