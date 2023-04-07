@@ -39,7 +39,7 @@ type Restaurant struct {
 }
 
 func GetRestaurantColl(databaseName string) *mongo.Collection {
-	return config.GetDatabase(databaseName).Collection("Restaurants")
+	return config.GetDatabase(databaseName).Collection("restaurants")
 }
 
 func InitRestaurantModel(databaseName string) {
