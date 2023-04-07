@@ -22,6 +22,7 @@ type PeerRepositoryI interface {
 	Update(peer models.Peer, fields []string) error
 	GetAllUrls(excludes []string) ([]string, error)
 	InsertMany(peers []models.Peer) (ids []primitive.ObjectID, err error)
+	FindUrlsByIds(ids []primitive.ObjectID) ([]string, error)
 }
 
 type PeerRepository struct {
