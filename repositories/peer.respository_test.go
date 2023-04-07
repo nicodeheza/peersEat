@@ -13,6 +13,7 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/nicodeheza/peersEat/config"
 	"github.com/nicodeheza/peersEat/models"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -269,6 +270,68 @@ func TestGetAllUrls(t *testing.T) {
 
 	for i, url := range res {
 		if url != *&newPeers[i].Url {
+			t.Errorf("elements are not equal:\n %v\n %v", url, newPeers[i].Url)
+		}
+	}
+}
+
+func TestFindUrlsByIds(t *testing.T) {
+	coll, server := initDb()
+	defer server.Stop(context.Background())
+
+	peerRepository := PeerRepository{coll}
+
+	newPeer1 := models.Peer{
+		Url:            "http://tests1.com",
+		Center:         models.GeoCoords{Long: 11.0, Lat: 11.0},
+		City:           "test city1",
+		Country:        "test country1",
+		DeliveryRadius: 2,
+	}
+	newPeer2 := models.Peer{
+		Url:            "http://tests2.com",
+		Center:         models.GeoCoords{Long: 22.0, Lat: 22.0},
+		City:           "test city2",
+		Country:        "test country2",
+		DeliveryRadius: 3,
+	}
+	newPeer3 := models.Peer{
+		Url:            "http://tests3.com",
+		Center:         models.GeoCoords{Long: 33.0, Lat: 33.0},
+		City:           "test city3",
+		Country:        "test country3",
+		DeliveryRadius: 5,
+	}
+	newPeer4 := models.Peer{
+		Url:            "http://tests4.com",
+		Center:         models.GeoCoords{Long: 44.0, Lat: 44.0},
+		City:           "test city4",
+		Country:        "test country4",
+		DeliveryRadius: 6,
+	}
+
+	newPeers := []*models.Peer{&newPeer1, &newPeer2, &newPeer3, &newPeer4}
+
+	for _, peer := range newPeers {
+		res, err := peerRepository.Insert(*peer)
+		if err != nil {
+			t.Errorf("document insertion failed with err: %v", err)
+		}
+		peer.Id = res
+	}
+
+	res, err := peerRepository.FindUrlsByIds([]primitive.ObjectID{newPeer1.Id, newPeer2.Id})
+
+	if err != nil {
+		t.Errorf("FindUrlsByIds failed with err: %v", err)
+	}
+
+	if len(res) != 2 {
+		t.Errorf("FindUrlsByIds returned incorrect amount of urls:\n%v", res)
+	}
+
+	for i, url := range res {
+		if url != newPeers[i].Url {
 			t.Errorf("elements are not equal:\n %v\n %v", url, newPeers[i].Url)
 		}
 	}
