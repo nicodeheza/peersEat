@@ -150,3 +150,24 @@ func (p *PeerRepository) GetAllUrls(excludes []string) ([]string, error) {
 
 	return result, nil
 }
+
+func (p *PeerRepository) FindUrlsByIds(ids []primitive.ObjectID) ([]string, error) {
+
+	filter := bson.D{{Key: "_id", Value: bson.M{"$in": ids}}}
+
+	cursor, err := p.coll.Find(context.Background(), filter)
+	if err != nil {
+		return []string{}, err
+	}
+
+	var result []string
+	for cursor.Next(context.Background()) {
+		var peer models.Peer
+		if err := cursor.Decode(&peer); err != nil {
+			return result, err
+		}
+		result = append(result, peer.Url)
+	}
+
+	return result, nil
+}
