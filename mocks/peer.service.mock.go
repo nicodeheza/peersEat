@@ -97,3 +97,7 @@ func (p *PeerServiceMock) GetPeersUrlById(ids []primitive.ObjectID) ([]string, e
 	// todo
 	return []string{"http://test.com", "http://test2.com"}, nil
 }
+func (p *PeerServiceMock) HaveRestaurant(restaurantQuery map[string]interface{}) (bool, error) {
+
+	return true, nil
+}

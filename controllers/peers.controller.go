@@ -14,6 +14,7 @@ import (
 type PeerControllerI interface {
 	PeerPresentation(c *fiber.Ctx) error
 	SendAllPeers(c *fiber.Ctx) error
+	HaveRestaurant(c *fiber.Ctx) error
 }
 
 type PeerController struct {
@@ -96,6 +97,7 @@ func (p *PeerController) SendAllPeers(c *fiber.Ctx) error {
 
 func (p *PeerController) AddNewRestaurant(c *fiber.Ctx) error {
 
+	//validate restaurant
 	newRestaurant := models.Restaurant{}
 	err := c.BodyParser(newRestaurant)
 	if err != nil {
@@ -125,4 +127,18 @@ func (p *PeerController) AddNewRestaurant(c *fiber.Ctx) error {
 	// return restaurant
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{"message": "ok"})
+}
+
+func (p *PeerController) HaveRestaurant(c *fiber.Ctx) error {
+	restaurantQuery := make(map[string]interface{})
+	err := c.BodyParser(restaurantQuery)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"message": err.Error()})
+	}
+	have, err := p.service.HaveRestaurant(restaurantQuery)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"message": err.Error()})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{"result": have})
 }

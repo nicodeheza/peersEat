@@ -28,6 +28,7 @@ type PeerServiceI interface {
 	AllPeersToSend(excludeUrls []string) ([]models.Peer, error)
 	GetLocalPeer() (models.Peer, error)
 	GetPeersUrlById(ids []primitive.ObjectID) ([]string, error)
+	HaveRestaurant(restaurantQuery map[string]interface{}) (bool, error)
 }
 
 type PeerService struct {
@@ -228,6 +229,16 @@ func (p *PeerService) GetPeersUrlById(ids []primitive.ObjectID) ([]string, error
 	return p.repo.FindUrlsByIds(ids)
 }
 
-// func (p *PeerService) HaveRestaurant(restaurantQuery map[string]interface{}) (bool, error) {
+func (p *PeerService) HaveRestaurant(restaurantQuery map[string]interface{}) (bool, error) {
+	_, err := p.restaurantRepo.FindOne(restaurantQuery)
 
-// }
+	if err.Error() == "mongo: no documents in result" {
+		return false, nil
+	}
+	if err != nil {
+		return true, err
+	}
+	return true, nil
+}
+
+// validate restaurant (check multiple reqs)
