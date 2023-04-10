@@ -17,7 +17,7 @@ func InitApp() *Application {
 	validate := validations.NewValidator(validator.New())
 	authHelpers := utils.NewAuthHelper()
 	restaurantModule := NewRestaurantModule(authHelpers, geo)
-	peerModule := newPeerModule(validate, geo, restaurantModule.Service)
+	peerModule := newPeerModule(validate, geo, restaurantModule.Service, restaurantModule.Repository)
 
 	return &Application{peerModule}
 }

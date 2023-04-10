@@ -31,12 +31,13 @@ type PeerServiceI interface {
 }
 
 type PeerService struct {
-	repo repositories.PeerRepositoryI
-	geo  geo.GeoServiceI
+	repo           repositories.PeerRepositoryI
+	geo            geo.GeoServiceI
+	restaurantRepo repositories.RestaurantRepositoryI
 }
 
-func NewPeerService(repository repositories.PeerRepositoryI, geo geo.GeoServiceI) *PeerService {
-	return &PeerService{repository, geo}
+func NewPeerService(repository repositories.PeerRepositoryI, geo geo.GeoServiceI, restaurantRepo repositories.RestaurantRepositoryI) *PeerService {
+	return &PeerService{repository, geo, restaurantRepo}
 }
 
 func (p *PeerService) InitPeer() {
@@ -226,3 +227,7 @@ func (p *PeerService) GetLocalPeer() (models.Peer, error) {
 func (p *PeerService) GetPeersUrlById(ids []primitive.ObjectID) ([]string, error) {
 	return p.repo.FindUrlsByIds(ids)
 }
+
+// func (p *PeerService) HaveRestaurant(restaurantQuery map[string]interface{}) (bool, error) {
+
+// }

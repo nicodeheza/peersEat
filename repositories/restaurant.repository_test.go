@@ -68,7 +68,7 @@ func TestInsertAndFindOne(t *testing.T) {
 		"name":    newRestaurants[0].Name,
 		"address": newRestaurants[0].Address,
 	}
-	rest, err := rr.findOne(query1)
+	rest, err := rr.FindOne(query1)
 	if err != nil {
 		t.Errorf("fail to find restaurant with error: %v", err)
 	}
@@ -80,7 +80,7 @@ func TestInsertAndFindOne(t *testing.T) {
 		"name":    "test3",
 		"address": "testAddress3",
 	}
-	rest, err = rr.findOne(query2)
+	rest, err = rr.FindOne(query2)
 	if err.Error() != "mongo: no documents in result" {
 		t.Errorf("expecting error: mongo: no documents in result but got: %v", err)
 	}

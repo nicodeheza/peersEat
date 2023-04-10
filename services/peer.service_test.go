@@ -28,7 +28,8 @@ func initTest() (*PeerService, *mocks.PeerRepositoryMock) {
 	os.Setenv("INITIAL_PEER", "http://test.com")
 	repo := mocks.NewPeerRepository()
 	geo := mocks.NewGeo()
-	return NewPeerService(repo, geo), repo
+	restaurantRepository := mocks.NewRestaurantRepositoryMock()
+	return NewPeerService(repo, geo, restaurantRepository), repo
 }
 
 func TestInitPeer(t *testing.T) {

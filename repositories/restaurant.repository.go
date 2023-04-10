@@ -11,7 +11,7 @@ import (
 
 type RestaurantRepositoryI interface {
 	Insert(restaurant models.Restaurant) (id primitive.ObjectID, err error)
-	findOne(query map[string]interface{}) (models.Restaurant, error)
+	FindOne(query map[string]interface{}) (models.Restaurant, error)
 }
 
 type RestaurantRepository struct {
@@ -30,7 +30,7 @@ func (r *RestaurantRepository) Insert(restaurant models.Restaurant) (id primitiv
 	return result.InsertedID.(primitive.ObjectID), nil
 }
 
-func (r *RestaurantRepository) findOne(query map[string]interface{}) (models.Restaurant, error) {
+func (r *RestaurantRepository) FindOne(query map[string]interface{}) (models.Restaurant, error) {
 	filter := bson.D{}
 	for k, v := range query {
 		filter = append(filter, bson.E{Key: k, Value: v})
