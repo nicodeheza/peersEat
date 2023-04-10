@@ -27,6 +27,7 @@ type PeerServiceI interface {
 	SendNewPeer(body types.PeerPresentationBody, peerUrl string, ch chan<- error, wg *sync.WaitGroup)
 	AllPeersToSend(excludeUrls []string) ([]models.Peer, error)
 	GetLocalPeer() (models.Peer, error)
+	GetPeersUrlById(ids []primitive.ObjectID) ([]string, error)
 }
 
 type PeerService struct {
@@ -222,6 +223,6 @@ func (p *PeerService) GetLocalPeer() (models.Peer, error) {
 	return p.repo.GetSelf()
 }
 
-func (p *PeerService) GetInAreaUrls(ids []primitive.ObjectID) ([]string, error) {
+func (p *PeerService) GetPeersUrlById(ids []primitive.ObjectID) ([]string, error) {
 	return p.repo.FindUrlsByIds(ids)
 }

@@ -120,7 +120,7 @@ func (p *PeerController) AddNewRestaurant(c *fiber.Ctx) error {
 	// get restaurant ✅
 	// complete data ✅
 	// validate is in influence area ✅
-	// validate is unique (others peers)
+	// validate is unique (others peers) ⬅
 	// save restaurant ✅
 	// return restaurant
 

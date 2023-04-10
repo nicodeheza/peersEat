@@ -6,6 +6,7 @@ import (
 
 	"github.com/nicodeheza/peersEat/models"
 	"github.com/nicodeheza/peersEat/types"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type PeerServiceMock struct {
@@ -90,4 +91,9 @@ func (p *PeerServiceMock) AllPeersToSend(excludeUrls []string) ([]models.Peer, e
 func (p *PeerServiceMock) GetLocalPeer() (models.Peer, error) {
 	// todo
 	return models.Peer{}, nil
+}
+
+func (p *PeerServiceMock) GetPeersUrlById(ids []primitive.ObjectID) ([]string, error) {
+	// todo
+	return []string{"http://test.com", "http://test2.com"}, nil
 }
