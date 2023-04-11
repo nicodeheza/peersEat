@@ -10,6 +10,7 @@ type Validate struct {
 }
 type ValidateI interface {
 	ValidatePeer(peer models.Peer) []*ErrorResponse
+	ValidateRestaurant(restaurant models.Restaurant) []*ErrorResponse
 }
 
 func NewValidator(validate *validator.Validate) *Validate {
@@ -22,10 +23,8 @@ type ErrorResponse struct {
 	Value       string
 }
 
-func (v Validate) ValidatePeer(peer models.Peer) []*ErrorResponse {
+func (v *Validate) getErrors(err error) []*ErrorResponse {
 	var errors []*ErrorResponse
-	err := v.validate.Struct(peer)
-
 	if err != nil {
 		for _, err := range err.(validator.ValidationErrors) {
 			var element ErrorResponse
@@ -37,4 +36,14 @@ func (v Validate) ValidatePeer(peer models.Peer) []*ErrorResponse {
 	}
 
 	return errors
+}
+
+func (v *Validate) ValidatePeer(peer models.Peer) []*ErrorResponse {
+	err := v.validate.Struct(peer)
+	return v.getErrors(err)
+}
+
+func (v *Validate) ValidateRestaurant(restaurant models.Restaurant) []*ErrorResponse {
+	err := v.validate.Struct(restaurant)
+	return v.getErrors(err)
 }

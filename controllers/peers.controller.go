@@ -97,11 +97,19 @@ func (p *PeerController) SendAllPeers(c *fiber.Ctx) error {
 }
 
 func (p *PeerController) AddNewRestaurant(c *fiber.Ctx) error {
+
+	//validate restaurant
 	newRestaurant := models.Restaurant{}
 	err := c.BodyParser(newRestaurant)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"message": err.Error()})
 	}
+
+	errors := p.validate.ValidateRestaurant(newRestaurant)
+	if errors != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(errors)
+	}
+
 	err = p.restaurants.CompleteRestaurantInitialData(&newRestaurant)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"message": err.Error()})

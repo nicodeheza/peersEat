@@ -24,7 +24,7 @@ func NewRestaurantService(repository repositories.RestaurantRepositoryI, authHel
 }
 
 func (r *RestaurantService) CompleteRestaurantInitialData(newRestaurant *models.Restaurant) error {
-	coords, err := r.geo.GetAddressCoords(newRestaurant.Address, newRestaurant.City, newRestaurant.Name)
+	coords, err := r.geo.GetAddressCoords(newRestaurant.Address, newRestaurant.City, newRestaurant.Country)
 	if err != nil {
 		return err
 	}

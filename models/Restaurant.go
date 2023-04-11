@@ -17,10 +17,10 @@ type Rate struct {
 
 type Restaurant struct {
 	Id                primitive.ObjectID `bson:"_id,omitempty" json:"id,omitempty"`
-	Name              string
-	Address           string
-	City              string
-	Country           string
+	Name              string             `validate:"required"`
+	Address           string             `validate:"required"`
+	City              string             `validate:"required"`
+	Country           string             `validate:"required"`
 	Coord             GeoCoords
 	IsConnected       bool    `bson:"isConnected,omitempty" json:"isConnected,omitempty"`
 	Menu              Menu    `bson:"menu,omitempty" json:"menu,omitempty"`
