@@ -15,6 +15,7 @@ type PeerControllerI interface {
 	PeerPresentation(c *fiber.Ctx) error
 	SendAllPeers(c *fiber.Ctx) error
 	HaveRestaurant(c *fiber.Ctx) error
+	AddNewRestaurant(c *fiber.Ctx) error
 }
 
 type PeerController struct {
@@ -96,8 +97,6 @@ func (p *PeerController) SendAllPeers(c *fiber.Ctx) error {
 }
 
 func (p *PeerController) AddNewRestaurant(c *fiber.Ctx) error {
-
-	//validate restaurant
 	newRestaurant := models.Restaurant{}
 	err := c.BodyParser(newRestaurant)
 	if err != nil {
@@ -119,19 +118,71 @@ func (p *PeerController) AddNewRestaurant(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"message": "restaurant out of area"})
 	}
 
-	// get restaurant ✅
-	// complete data ✅
-	// validate is in influence area ✅
-	// validate is unique (others peers) ⬅
-	// save restaurant ✅
-	// return restaurant
+	inAreaUrl, err := p.service.GetPeersUrlById(self.InAreaPeers)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"message": err.Error()})
+	}
 
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{"message": "ok"})
+	query := make(map[string]interface{})
+	if newRestaurant.Name != "" {
+		query["name"] = newRestaurant.Name
+	}
+	if newRestaurant.Address != "" {
+		query["address"] = newRestaurant.Address
+	}
+	if newRestaurant.City != "" {
+		query["city"] = newRestaurant.City
+	}
+	if newRestaurant.Country != "" {
+		query["country"] = newRestaurant.Country
+	}
+
+	ch := make(chan types.PeerHaveRestaurantResp)
+	var wg sync.WaitGroup
+
+	for _, url := range inAreaUrl {
+		wg.Add(1)
+		go p.service.PeerHaveRestaurant(url, query, ch, &wg)
+	}
+
+	go func() {
+		wg.Wait()
+		close(ch)
+	}()
+
+	var isValid bool
+	var errs []string
+	for resp := range ch {
+		if resp.Err != nil {
+			errs = append(errs, resp.Err.Error())
+		}
+		if resp.Resp {
+			isValid = false
+			break
+		}
+		isValid = true
+	}
+	if len(errs) > 0 {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"errors": errs})
+	}
+
+	if !isValid {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"message": "restaurant already exists"})
+	}
+
+	id, err := p.restaurants.AddNewRestaurant(newRestaurant)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"message": err.Error()})
+	}
+
+	newRestaurant.Id = id
+
+	return c.Status(fiber.StatusOK).JSON(newRestaurant)
 }
 
 func (p *PeerController) HaveRestaurant(c *fiber.Ctx) error {
 	restaurantQuery := make(map[string]interface{})
-	err := c.BodyParser(restaurantQuery)
+	err := c.QueryParser(restaurantQuery)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"message": err.Error()})
 	}

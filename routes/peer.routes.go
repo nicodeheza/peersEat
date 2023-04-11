@@ -11,4 +11,5 @@ func peerRoutes(app *fiber.App, controllers controllers.PeerControllerI) {
 	peerGroup.Post("/present", controllers.PeerPresentation)
 	peerGroup.Get("/all", controllers.SendAllPeers)
 	peerGroup.Get("/restaurant/have", controllers.HaveRestaurant)
+	peerGroup.Post("/restaurant", controllers.AddNewRestaurant)
 }

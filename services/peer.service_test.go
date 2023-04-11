@@ -360,3 +360,37 @@ func TestAllPeerToSend(t *testing.T) {
 	}
 
 }
+
+func TestPeerHaveRestaurant(t *testing.T) {
+	//todo
+	httpmock.Activate()
+	defer httpmock.DeactivateAndReset()
+	service, repo := initTest()
+	defer repo.ClearCalls()
+
+	httpmock.RegisterResponder("GET", "http://test.com/peer/restaurant/have",
+		httpmock.NewStringResponder(200, `{"result": false}`))
+
+	var wg sync.WaitGroup
+	wg.Add(1)
+	c := make(chan types.PeerHaveRestaurantResp)
+	query := map[string]interface{}{
+		"name":    "test",
+		"address": "test",
+	}
+
+	go service.PeerHaveRestaurant("http://test.com", query, c, &wg)
+
+	go func() {
+		wg.Wait()
+		close(c)
+	}()
+
+	res := <-c
+	if res.Resp {
+		t.Error("expecting false but got true")
+	}
+	if res.Err != nil {
+		t.Errorf("%s", res.Err.Error())
+	}
+}

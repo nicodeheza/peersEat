@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"strconv"
 	"strings"
@@ -29,6 +30,7 @@ type PeerServiceI interface {
 	GetLocalPeer() (models.Peer, error)
 	GetPeersUrlById(ids []primitive.ObjectID) ([]string, error)
 	HaveRestaurant(restaurantQuery map[string]interface{}) (bool, error)
+	PeerHaveRestaurant(peerUrl string, restaurantQuery map[string]interface{}, c chan<- types.PeerHaveRestaurantResp, wg *sync.WaitGroup)
 }
 
 type PeerService struct {
@@ -241,4 +243,35 @@ func (p *PeerService) HaveRestaurant(restaurantQuery map[string]interface{}) (bo
 	return true, nil
 }
 
-// validate restaurant (check multiple reqs)
+func (p *PeerService) PeerHaveRestaurant(peerUrl string, restaurantQuery map[string]interface{}, c chan<- types.PeerHaveRestaurantResp, wg *sync.WaitGroup) {
+	defer wg.Done()
+	url, err := url.Parse(peerUrl + "/peer/restaurant/have")
+	if err != nil {
+		c <- types.PeerHaveRestaurantResp{Resp: false, Err: err}
+		return
+	}
+	query := url.Query()
+	for k, v := range restaurantQuery {
+		query.Add(k, fmt.Sprintf("%v", v))
+	}
+	url.RawQuery = query.Encode()
+
+	resp, err := http.Get(url.String())
+	if err != nil {
+		// fault peer
+		c <- types.PeerHaveRestaurantResp{Resp: false, Err: err}
+		return
+	}
+	type Data struct {
+		Result bool
+	}
+	data := Data{}
+	err = json.NewDecoder(resp.Body).Decode(&data)
+	if err != nil {
+		c <- types.PeerHaveRestaurantResp{Resp: false, Err: err}
+		return
+	}
+
+	c <- types.PeerHaveRestaurantResp{Resp: data.Result, Err: nil}
+	return
+}

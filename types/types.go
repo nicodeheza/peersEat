@@ -26,3 +26,8 @@ type GetCordsResponse struct {
 	Type         string
 	Importance   float64
 }
+
+type PeerHaveRestaurantResp struct {
+	Resp bool
+	Err  error
+}

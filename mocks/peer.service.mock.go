@@ -101,3 +101,7 @@ func (p *PeerServiceMock) HaveRestaurant(restaurantQuery map[string]interface{})
 
 	return true, nil
 }
+
+func (p *PeerServiceMock) PeerHaveRestaurant(peerUrl string, restaurantQuery map[string]interface{}, c chan<- types.PeerHaveRestaurantResp, wg *sync.WaitGroup) {
+
+}
