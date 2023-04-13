@@ -98,8 +98,10 @@ func (p *PeerServiceMock) GetPeersUrlById(ids []primitive.ObjectID) ([]string, e
 	return []string{"http://test.com", "http://test2.com"}, nil
 }
 func (p *PeerServiceMock) HaveRestaurant(restaurantQuery map[string]interface{}) (bool, error) {
-
-	return true, nil
+	if restaurantQuery["name"] == "exist" {
+		return true, nil
+	}
+	return false, nil
 }
 
 func (p *PeerServiceMock) PeerHaveRestaurant(peerUrl string, restaurantQuery map[string]interface{}, c chan<- types.PeerHaveRestaurantResp, wg *sync.WaitGroup) {

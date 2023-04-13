@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"strings"
 	"sync"
 
 	"github.com/gofiber/fiber/v2"
@@ -188,10 +189,12 @@ func (p *PeerController) AddNewRestaurant(c *fiber.Ctx) error {
 
 func (p *PeerController) HaveRestaurant(c *fiber.Ctx) error {
 	restaurantQuery := make(map[string]interface{})
-	err := c.QueryParser(restaurantQuery)
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"message": err.Error()})
+	querySrt := string(c.Request().URI().QueryString())
+	for _, pairSrt := range strings.Split(querySrt, "&") {
+		pair := strings.Split(pairSrt, "=")
+		restaurantQuery[pair[0]] = pair[1]
 	}
+
 	have, err := p.service.HaveRestaurant(restaurantQuery)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"message": err.Error()})

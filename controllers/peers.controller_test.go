@@ -260,3 +260,58 @@ func TestSendAllPeers(t *testing.T) {
 		service.ClearCalls()
 	}
 }
+
+func TestHaveRestaurant(t *testing.T) {
+	controller, service, app := initTest()
+
+	type Test struct {
+		Title  string
+		Query  string
+		Status int
+		Json   string
+	}
+
+	tests := []Test{
+		{
+			Title:  "not exist",
+			Query:  "name=test&address=test&city=test&country=test",
+			Status: 200,
+			Json:   "map[result:false]",
+		},
+		{
+			Title:  "exist",
+			Query:  "name=exist&address=test&city=test&country=test",
+			Status: 200,
+			Json:   "map[result:true]",
+		},
+	}
+
+	app.Get("/", controller.HaveRestaurant)
+	for _, test := range tests {
+		req := httptest.NewRequest("GET", fmt.Sprintf("/?%s", test.Query), nil)
+		req.Header.Set("Content-Type", "application/json")
+
+		resp, err := app.Test(req, 1)
+		if err != nil {
+			t.Fatal()
+		}
+
+		var b interface{}
+
+		json.NewDecoder(resp.Body).Decode(&b)
+
+		if resp.StatusCode != test.Status {
+			t.Errorf("%s\n\n incorrect status code\n\n expected: %d\n got: %d\n\n",
+				test.Title, test.Status, resp.StatusCode)
+		}
+
+		bodyString := fmt.Sprintf("%v", b)
+
+		if test.Json != bodyString {
+			t.Errorf("%s\n\n incorrect body\n\n expected: %s\n\n got: %s\n\n",
+				test.Title, test.Json, bodyString)
+		}
+
+		service.ClearCalls()
+	}
+}
