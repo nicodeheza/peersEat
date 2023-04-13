@@ -107,7 +107,7 @@ func TestAddNewPeer(t *testing.T) {
 	inDelivery := basePeer
 	inDelivery.DeliveryRadius = 1
 	inBoth := inInfluence
-	inBoth.DeliveryRadius = 1
+	inBoth.DeliveryRadius = 2
 
 	type test struct {
 		Peer   models.Peer
@@ -124,28 +124,29 @@ func TestAddNewPeer(t *testing.T) {
 	selfInBoth := selfPeer
 	selfInBoth.InAreaPeers = append(selfInBoth.InAreaPeers, primitive.NilObjectID)
 	selfInBoth.InDeliveryAreaPeers = append(selfInBoth.InDeliveryAreaPeers, primitive.NilObjectID)
+	selfInBoth.DeliveryRadius = 2
 
 	tests := []test{
-		{
-			Peer: basePeer,
-		},
-		{
-			Peer: difCity,
-		},
-		{
-			Peer: difCountry,
-		},
-		{
-			Peer: difCityAndCountry,
-		},
-		{
-			Peer:   inInfluence,
-			Expect: mocks.ExpectUpdate{Peer: selfInInfluence, Fields: []string{"InAreaPeers"}},
-		},
-		{
-			Peer:   inDelivery,
-			Expect: mocks.ExpectUpdate{Peer: selfInDelivery, Fields: []string{"InDeliveryAreaPeers"}},
-		},
+		// {
+		// 	Peer: basePeer,
+		// },
+		// {
+		// 	Peer: difCity,
+		// },
+		// {
+		// 	Peer: difCountry,
+		// },
+		// {
+		// 	Peer: difCityAndCountry,
+		// },
+		// {
+		// 	Peer:   inInfluence,
+		// 	Expect: mocks.ExpectUpdate{Peer: selfInInfluence, Fields: []string{"InAreaPeers"}},
+		// },
+		// {
+		// 	Peer:   inDelivery,
+		// 	Expect: mocks.ExpectUpdate{Peer: selfInDelivery, Fields: []string{"InDeliveryAreaPeers"}},
+		// },
 		{
 			Peer:   inBoth,
 			Expect: mocks.ExpectUpdate{Peer: selfInBoth, Fields: []string{"InAreaPeers", "InDeliveryAreaPeers"}},

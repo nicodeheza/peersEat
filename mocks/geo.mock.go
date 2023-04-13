@@ -43,7 +43,7 @@ func (g *GeoService) IsInInfluenceArea(peerCenter, geoPoint models.GeoCoords) bo
 }
 
 func (g *GeoService) AreInfluenceAreasOverlaying(selfPeer models.Peer, peer models.Peer) bool {
-	if peer.DeliveryRadius == 2 {
+	if selfPeer.DeliveryRadius == 2 {
 		return true
 	}
 	return false
