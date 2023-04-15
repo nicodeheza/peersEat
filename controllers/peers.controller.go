@@ -163,7 +163,6 @@ func (p *PeerController) AddNewRestaurant(c *fiber.Ctx) error {
 		if resp.Err != nil {
 			errs = append(errs, resp.Err.Error())
 		}
-		//check this
 		if resp.Resp {
 			isValid = false
 			break
