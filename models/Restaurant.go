@@ -21,21 +21,21 @@ type Restaurant struct {
 	Address           string             `validate:"required"`
 	City              string             `validate:"required"`
 	Country           string             `validate:"required"`
-	Coord             GeoCoords
-	IsConnected       bool    `bson:"isConnected,omitempty" json:"isConnected,omitempty"`
-	Menu              Menu    `bson:"menu,omitempty" json:"menu,omitempty"`
-	OpenTime          string  `bson:"openTime,omitempty" json:"openTime,omitempty"`
-	CloseTime         string  `bson:"closeTime,omitempty" json:"closeTime,omitempty"`
-	Rate              Rate    `bson:"rate,omitempty" json:"rate,omitempty"`
-	Phone             string  `bson:"Phone,omitempty" json:"phone,omitempty"`
-	DeliveryCost      float32 `bson:"deliveryCost,omitempty" json:"deliveryCost,omitempty"`
-	IsDeliveryFixCost bool    `bson:"isDeliveryFixCost,omitempty" json:"isDeliveryFixCost,omitempty"`
-	MinDeliveryTime   uint    `bson:"minDeliveryTime,omitempty" json:"minDeliveryTime,omitempty"`
-	MaxDeliveryTime   uint    `bson:"maxDeliveryTime,omitempty" json:"maxDeliveryTime,omitempty"`
-	DeliveryRadius    float64 `bson:"deliveryRadius,omitempty" json:"deliveryRadius,omitempty"`
-	UserName          string  `bson:"userName,omitempty" json:"userName,omitempty"`
-	Password          string  `bson:"password,omitempty" json:"password,omitempty"`
-	IsFinalPassword   bool    `bson:"isFinalPassword,omitempty" json:"isFinalPassword,omitempty"`
+	Coord             GeoCoords          `validate:"-"`
+	IsConnected       bool               `bson:"isConnected,omitempty" json:"isConnected,omitempty"`
+	Menu              Menu               `bson:"menu,omitempty" json:"menu,omitempty"`
+	OpenTime          string             `bson:"openTime,omitempty" json:"openTime,omitempty"`
+	CloseTime         string             `bson:"closeTime,omitempty" json:"closeTime,omitempty"`
+	Rate              Rate               `bson:"rate,omitempty" json:"rate,omitempty"`
+	Phone             string             `bson:"Phone,omitempty" json:"phone,omitempty"`
+	DeliveryCost      float32            `bson:"deliveryCost,omitempty" json:"deliveryCost,omitempty"`
+	IsDeliveryFixCost bool               `bson:"isDeliveryFixCost,omitempty" json:"isDeliveryFixCost,omitempty"`
+	MinDeliveryTime   uint               `bson:"minDeliveryTime,omitempty" json:"minDeliveryTime,omitempty"`
+	MaxDeliveryTime   uint               `bson:"maxDeliveryTime,omitempty" json:"maxDeliveryTime,omitempty"`
+	DeliveryRadius    float64            `bson:"deliveryRadius,omitempty" json:"deliveryRadius,omitempty"`
+	UserName          string             `bson:"userName,omitempty" json:"userName,omitempty"`
+	Password          string             `bson:"password,omitempty" json:"password,omitempty"`
+	IsFinalPassword   bool               `bson:"isFinalPassword,omitempty" json:"isFinalPassword,omitempty"`
 }
 
 func GetRestaurantColl(databaseName string) *mongo.Collection {

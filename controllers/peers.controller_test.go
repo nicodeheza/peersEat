@@ -16,12 +16,12 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/nicodeheza/peersEat/mocks"
 	"github.com/nicodeheza/peersEat/models"
-	"github.com/nicodeheza/peersEat/services"
 	"github.com/nicodeheza/peersEat/services/validations"
 	"github.com/nicodeheza/peersEat/types"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-func initTest() (*PeerController, *mocks.PeerServiceMock, *fiber.App) {
+func initTest() (*PeerController, *mocks.PeerServiceMock, *mocks.RestaurantServiceMock, *fiber.App) {
 	err := godotenv.Load("../.env")
 	if err != nil {
 		log.Fatal("Error loading .env file")
@@ -29,16 +29,16 @@ func initTest() (*PeerController, *mocks.PeerServiceMock, *fiber.App) {
 
 	service := mocks.NewPeerServiceMock()
 	validate := validations.NewValidator(validator.New())
-	restaurantService := services.RestaurantService{}
+	restaurantService := mocks.NewRestaurantServiceMock()
 	geo := mocks.NewGeo()
-	peerController := NewPeerController(service, validate, &restaurantService, geo)
+	peerController := NewPeerController(service, validate, restaurantService, geo)
 	app := fiber.New()
 
-	return peerController, service, app
+	return peerController, service, restaurantService, app
 }
 
 func TestPeerPresentation(t *testing.T) {
-	controller, service, app := initTest()
+	controller, service, _, app := initTest()
 
 	type Test struct {
 		Title         string
@@ -192,7 +192,7 @@ func TestPeerPresentation(t *testing.T) {
 }
 
 func TestSendAllPeers(t *testing.T) {
-	controller, service, app := initTest()
+	controller, service, _, app := initTest()
 
 	type Test struct {
 		Title         string
@@ -262,7 +262,7 @@ func TestSendAllPeers(t *testing.T) {
 }
 
 func TestHaveRestaurant(t *testing.T) {
-	controller, service, app := initTest()
+	controller, service, _, app := initTest()
 
 	type Test struct {
 		Title  string
@@ -310,6 +310,116 @@ func TestHaveRestaurant(t *testing.T) {
 		if test.Json != bodyString {
 			t.Errorf("%s\n\n incorrect body\n\n expected: %s\n\n got: %s\n\n",
 				test.Title, test.Json, bodyString)
+		}
+
+		service.ClearCalls()
+	}
+}
+
+func TestAddNewRestaurant(t *testing.T) {
+	controller, service, restaurantService, app := initTest()
+
+	type Test struct {
+		Title      string
+		Body       models.Restaurant
+		Status     int
+		Json       string
+		WasAdded   bool
+		InAreaHave bool
+	}
+
+	tests := []Test{
+		{
+			Title: "Out of influence area",
+			Body: models.Restaurant{
+				Name:    "out",
+				Address: "testAddress",
+				City:    "testCity",
+				Country: "testCountry",
+			},
+			Status: 400,
+			Json:   "map[message:restaurant out of area]",
+		},
+		{
+			Title: "Send existent restaurant",
+			Body: models.Restaurant{
+				Name:    "test",
+				Address: "testAddress",
+				City:    "testCity",
+				Country: "testCountry",
+			},
+			Status:     400,
+			Json:       "map[message:restaurant already exists]",
+			InAreaHave: true,
+		},
+		{
+			Title: "add it successfully",
+			Body: models.Restaurant{
+				Name:    "test",
+				Address: "testAddress",
+				City:    "testCity",
+				Country: "testCountry",
+			},
+			Status:   200,
+			Json:     "map[newRestaurant:map[Address:testAddress City:testCity Coord:map[Lat:1 Long:1] Country:testCountry Name:test id:000000000000000000000000 menu:map[Sections:<nil>] password:testHash rate:map[Stars:0 Votes:0] userName:testUsername] tempPassword:testPassword]",
+			WasAdded: true,
+		},
+	}
+
+	app.Post("/", controller.AddNewRestaurant)
+	for _, test := range tests {
+
+		service.InAreaPeerHave = test.InAreaHave
+
+		body, err := json.Marshal(test.Body)
+		if err != nil {
+			t.Fatal(err)
+		}
+		req := httptest.NewRequest("POST", "/", bytes.NewReader(body))
+		req.Header.Set("Content-Type", "application/json")
+
+		resp, err := app.Test(req, 1)
+		if err != nil {
+			t.Fatal()
+		}
+
+		var b interface{}
+
+		json.NewDecoder(resp.Body).Decode(&b)
+
+		if resp.StatusCode != test.Status {
+			t.Errorf("%s\n\n incorrect status code\n\n expected: %d\n got: %d\n\n",
+				test.Title, test.Status, resp.StatusCode)
+		}
+
+		bodyString := fmt.Sprintf("%v", b)
+
+		if test.Json != bodyString {
+			t.Errorf("%s\n\n incorrect body\n\n expected: %s\n\n got: %s\n\n",
+				test.Title, test.Json, bodyString)
+		}
+
+		if test.WasAdded {
+			expectRestaurant := models.Restaurant{
+				Id:              primitive.ObjectID{},
+				Name:            "test",
+				Address:         "testAddress",
+				City:            "testCity",
+				Country:         "testCountry",
+				Coord:           models.GeoCoords{Long: 1, Lat: 1},
+				Password:        "testHash",
+				UserName:        "testUsername",
+				IsFinalPassword: false,
+			}
+			savedRestaurant := restaurantService.Calls["AddNewRestaurant"][0][0]
+			if !reflect.DeepEqual(expectRestaurant, savedRestaurant) {
+				t.Errorf("%s\n\n incorrect restaurant saved\n Expecting: %v\n Got: %v\n",
+					test.Title, expectRestaurant, savedRestaurant)
+			}
+		} else {
+			if restaurantService.Calls["AddNewRestaurant"] != nil {
+				t.Error("Restaurant was saved when wasn't expected")
+			}
 		}
 
 		service.ClearCalls()

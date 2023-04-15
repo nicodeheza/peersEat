@@ -15,7 +15,7 @@ type RestaurantService struct {
 }
 
 type RestaurantServiceI interface {
-	CompleteRestaurantInitialData(newRestaurant *models.Restaurant) error
+	CompleteRestaurantInitialData(newRestaurant *models.Restaurant) (string, error)
 	AddNewRestaurant(newRestaurant models.Restaurant) (primitive.ObjectID, error)
 }
 
@@ -23,10 +23,10 @@ func NewRestaurantService(repository repositories.RestaurantRepositoryI, authHel
 	return &RestaurantService{repository, authHelpers, geo}
 }
 
-func (r *RestaurantService) CompleteRestaurantInitialData(newRestaurant *models.Restaurant) error {
+func (r *RestaurantService) CompleteRestaurantInitialData(newRestaurant *models.Restaurant) (string, error) {
 	coords, err := r.geo.GetAddressCoords(newRestaurant.Address, newRestaurant.City, newRestaurant.Country)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	newRestaurant.Coord = coords
@@ -34,18 +34,18 @@ func (r *RestaurantService) CompleteRestaurantInitialData(newRestaurant *models.
 	newPassword := r.authHelpers.GetRandomPassword(20)
 	newHash, err := r.authHelpers.HashPasswords(newPassword)
 	if err != nil {
-		return err
+		return "", err
 	}
 	newUserName, err := r.authHelpers.GetRandomWords(3)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	newRestaurant.Password = newHash
 	newRestaurant.UserName = newUserName
 	newRestaurant.IsFinalPassword = false
 
-	return nil
+	return newPassword, nil
 }
 
 func (r *RestaurantService) AddNewRestaurant(newRestaurant models.Restaurant) (primitive.ObjectID, error) {
