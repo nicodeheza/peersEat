@@ -30,3 +30,6 @@ func (r *RestaurantServiceMock) AddNewRestaurant(newRestaurant models.Restaurant
 	r.Calls["AddNewRestaurant"] = append(r.Calls["AddNewRestaurant"], []interface{}{newRestaurant})
 	return primitive.ObjectID{}, nil
 }
+func (r *RestaurantServiceMock) UpdateRestaurantPassword(id primitive.ObjectID, newPassword string) error {
+	return nil
+}

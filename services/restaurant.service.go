@@ -17,6 +17,7 @@ type RestaurantService struct {
 type RestaurantServiceI interface {
 	CompleteRestaurantInitialData(newRestaurant *models.Restaurant) (string, error)
 	AddNewRestaurant(newRestaurant models.Restaurant) (primitive.ObjectID, error)
+	UpdateRestaurantPassword(id primitive.ObjectID, newPassword string) error
 }
 
 func NewRestaurantService(repository repositories.RestaurantRepositoryI, authHelpers utils.AuthHelpersI, geo geo.GeoServiceI) *RestaurantService {
@@ -56,6 +57,6 @@ func (r *RestaurantService) AddNewRestaurant(newRestaurant models.Restaurant) (p
 	return id, nil
 }
 
-// func (r *RestaurantService) UpdateRestaurantPassword(id primitive.ObjectID, newPassword string) error {
-// 	err := r.repo.
-// }
+func (r *RestaurantService) UpdateRestaurantPassword(id primitive.ObjectID, newPassword string) error {
+	return r.repo.Update(id, map[string]interface{}{"password": newPassword})
+}

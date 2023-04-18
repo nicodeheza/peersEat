@@ -31,3 +31,8 @@ type PeerHaveRestaurantResp struct {
 	Resp bool
 	Err  error
 }
+
+type UpdateRestaurantPassword struct {
+	NewPassword string
+	Id          string
+}
