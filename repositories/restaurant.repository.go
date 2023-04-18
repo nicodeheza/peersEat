@@ -12,6 +12,7 @@ import (
 type RestaurantRepositoryI interface {
 	Insert(restaurant models.Restaurant) (id primitive.ObjectID, err error)
 	FindOne(query map[string]interface{}) (models.Restaurant, error)
+	Update(id primitive.ObjectID, updates map[string]interface{}) error
 }
 
 type RestaurantRepository struct {

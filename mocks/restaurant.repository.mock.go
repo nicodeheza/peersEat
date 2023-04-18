@@ -21,3 +21,6 @@ func (r *RestaurantRepositoryMock) Insert(restaurant models.Restaurant) (id prim
 func (r *RestaurantRepositoryMock) FindOne(query map[string]interface{}) (models.Restaurant, error) {
 	return models.Restaurant{}, errors.New("not implemented")
 }
+func (r *RestaurantRepositoryMock) Update(id primitive.ObjectID, updates map[string]interface{}) error {
+	return nil
+}

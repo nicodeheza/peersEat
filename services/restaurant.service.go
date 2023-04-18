@@ -55,3 +55,7 @@ func (r *RestaurantService) AddNewRestaurant(newRestaurant models.Restaurant) (p
 	}
 	return id, nil
 }
+
+// func (r *RestaurantService) UpdateRestaurantPassword(id primitive.ObjectID, newPassword string) error {
+// 	err := r.repo.
+// }
