@@ -85,3 +85,60 @@ func TestInsertAndFindOne(t *testing.T) {
 		t.Errorf("expecting error: mongo: no documents in result but got: %v", err)
 	}
 }
+
+func TestUpdateRestaurant(t *testing.T) {
+	coll, server := initRestaurantDb()
+	defer server.Stop(context.Background())
+
+	rr := RestaurantRepository{coll}
+	id, err := rr.Insert(models.Restaurant{
+		Name:            "test",
+		Address:         "testAddress",
+		City:            "testCity",
+		Country:         "testCountry",
+		UserName:        "testUsername",
+		Password:        "testPassword",
+		IsFinalPassword: false,
+	})
+	if err != nil {
+		t.Errorf("fail to insert restaurant with error: %v", err)
+	}
+
+	updates := map[string]interface{}{
+		"name":            "testUpdated",
+		"address":         "testAddressUpdated",
+		"city":            "testCityUpdated",
+		"country":         "testCountryUpdated",
+		"userName":        "testUsernameUpdated",
+		"password":        "testPasswordUpdated",
+		"isFinalPassword": true,
+	}
+
+	err = rr.Update(id, updates)
+	if err != nil {
+		t.Errorf("fail to update restaurant with error: %v", err)
+	}
+	res, err := rr.FindOne(map[string]interface{}{"_id": id})
+	if err != nil {
+		t.Errorf("fail to find restaurant with error: %v", err)
+	}
+	fmt.Println(">>>>>", res)
+	if res.Name != updates["name"] {
+		t.Errorf("incorrect restaurant name.\n expected: %v\n got: %v\n", updates["name"], res.Name)
+	}
+	if res.Address != updates["address"] {
+		t.Errorf("incorrect restaurant address.\n expected: %v\n got: %v\n", updates["address"], res.Address)
+	}
+	if res.City != updates["city"] {
+		t.Errorf("incorrect restaurant city.\n expected: %v\n got: %v\n", updates["city"], res.City)
+	}
+	if res.UserName != updates["userName"] {
+		t.Errorf("incorrect restaurant userName.\n expected: %v\n got: %v\n", updates["userName"], res.UserName)
+	}
+	if res.Password != updates["password"] {
+		t.Errorf("incorrect restaurant password.\n expected: %v\n got: %v\n", updates["password"], res.Password)
+	}
+	if res.IsFinalPassword != updates["isFinalPassword"] {
+		t.Errorf("incorrect restaurant isFinalPassword.\n expected: %v\n got: %v\n", updates["isFinalPassword"], res.IsFinalPassword)
+	}
+}

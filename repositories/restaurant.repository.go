@@ -41,3 +41,10 @@ func (r *RestaurantRepository) FindOne(query map[string]interface{}) (models.Res
 
 	return result, err
 }
+
+func (r *RestaurantRepository) Update(id primitive.ObjectID, updates map[string]interface{}) error {
+	filter := bson.D{{Key: "_id", Value: id}}
+	update := bson.D{{Key: "$set", Value: updates}}
+	_, err := r.coll.UpdateOne(context.Background(), filter, update)
+	return err
+}
