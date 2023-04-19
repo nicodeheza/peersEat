@@ -58,5 +58,9 @@ func (r *RestaurantService) AddNewRestaurant(newRestaurant models.Restaurant) (p
 }
 
 func (r *RestaurantService) UpdateRestaurantPassword(id primitive.ObjectID, newPassword string) error {
-	return r.repo.Update(id, map[string]interface{}{"password": newPassword})
+	hash, err := r.authHelpers.HashPasswords(newPassword)
+	if err != nil {
+		return err
+	}
+	return r.repo.Update(id, map[string]interface{}{"password": hash})
 }
