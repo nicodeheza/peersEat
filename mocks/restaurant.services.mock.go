@@ -1,6 +1,8 @@
 package mocks
 
 import (
+	"errors"
+
 	"github.com/nicodeheza/peersEat/models"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -31,5 +33,8 @@ func (r *RestaurantServiceMock) AddNewRestaurant(newRestaurant models.Restaurant
 	return primitive.ObjectID{}, nil
 }
 func (r *RestaurantServiceMock) UpdateRestaurantPassword(id primitive.ObjectID, newPassword string) error {
+	if newPassword == "error" {
+		return errors.New("test error")
+	}
 	return nil
 }

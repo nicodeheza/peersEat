@@ -7,5 +7,5 @@ import (
 
 func RestaurantRoutes(app *fiber.App, controllers controllers.RestaurantControllerI) {
 	restaurantGroup := app.Group("/restaurant")
-	restaurantGroup.Put("/password", controllers.UpdatePassword)
+	restaurantGroup.Patch("/password", controllers.UpdatePassword)
 }
