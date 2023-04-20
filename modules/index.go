@@ -8,7 +8,8 @@ import (
 )
 
 type Application struct {
-	Peer *PeerModule
+	Peer       *PeerModule
+	Restaurant *RestaurantModule
 }
 
 func InitApp() *Application {
@@ -19,5 +20,5 @@ func InitApp() *Application {
 	restaurantModule := NewRestaurantModule(authHelpers, geo)
 	peerModule := newPeerModule(validate, geo, restaurantModule.Service, restaurantModule.Repository)
 
-	return &Application{peerModule}
+	return &Application{peerModule, restaurantModule}
 }

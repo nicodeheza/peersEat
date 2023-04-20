@@ -14,7 +14,7 @@ type RestaurantModule struct {
 	Collection *mongo.Collection
 	Repository repositories.RestaurantRepositoryI
 	Service    services.RestaurantServiceI
-	controller controllers.RestaurantControllerI
+	Controller controllers.RestaurantControllerI
 }
 
 func NewRestaurantModule(authHelpers utils.AuthHelpersI, geo geo.GeoServiceI) *RestaurantModule {

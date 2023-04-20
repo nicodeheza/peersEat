@@ -5,7 +5,8 @@ import (
 	"github.com/nicodeheza/peersEat/modules"
 )
 
-func Register(app *fiber.App, appModule *modules.Application){
+func Register(app *fiber.App, appModule *modules.Application) {
 
 	peerRoutes(app, appModule.Peer.Controllers)
+	RestaurantRoutes(app, appModule.Restaurant.Controller)
 }
