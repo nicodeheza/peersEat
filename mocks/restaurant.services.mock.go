@@ -38,3 +38,7 @@ func (r *RestaurantServiceMock) UpdateRestaurantPassword(id primitive.ObjectID, 
 	}
 	return nil
 }
+func (r *RestaurantServiceMock) Authenticate(password, userName string) (bool, string, error) {
+
+	return true, "testId", nil
+}

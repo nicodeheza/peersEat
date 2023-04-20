@@ -18,6 +18,7 @@ type RestaurantServiceI interface {
 	CompleteRestaurantInitialData(newRestaurant *models.Restaurant) (string, error)
 	AddNewRestaurant(newRestaurant models.Restaurant) (primitive.ObjectID, error)
 	UpdateRestaurantPassword(id primitive.ObjectID, newPassword string) error
+	Authenticate(password, userName string) (bool, string, error)
 }
 
 func NewRestaurantService(repository repositories.RestaurantRepositoryI, authHelpers utils.AuthHelpersI, geo geo.GeoServiceI) *RestaurantService {
@@ -63,4 +64,15 @@ func (r *RestaurantService) UpdateRestaurantPassword(id primitive.ObjectID, newP
 		return err
 	}
 	return r.repo.Update(id, map[string]interface{}{"password": hash})
+}
+
+func (r *RestaurantService) Authenticate(password, userName string) (bool, string, error) {
+	restaurant, err := r.repo.FindOne(map[string]interface{}{"userName": userName})
+	if err != nil {
+		return false, "", err
+	}
+	res := r.authHelpers.CheckPassword(password, restaurant.Password)
+	id := restaurant.Id.Hex()
+
+	return res, id, nil
 }

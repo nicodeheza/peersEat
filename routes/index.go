@@ -7,6 +7,6 @@ import (
 
 func Register(app *fiber.App, appModule *modules.Application) {
 
-	peerRoutes(app, appModule.Peer.Controllers)
-	RestaurantRoutes(app, appModule.Restaurant.Controller)
+	peerRoutes(app, appModule.Peer.Controllers, appModule.AuthMiddleware)
+	RestaurantRoutes(app, appModule.Restaurant.Controller, appModule.AuthMiddleware)
 }

@@ -36,3 +36,8 @@ type UpdateRestaurantPassword struct {
 	NewPassword string
 	Id          string
 }
+
+type AuthReq struct {
+	Password string
+	UserName string
+}

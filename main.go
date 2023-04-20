@@ -7,7 +7,6 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/nicodeheza/peersEat/config"
-	"github.com/nicodeheza/peersEat/middleware"
 	"github.com/nicodeheza/peersEat/models"
 	"github.com/nicodeheza/peersEat/modules"
 	"github.com/nicodeheza/peersEat/routes"
@@ -18,11 +17,12 @@ func main() {
 	app := fiber.New()
 	app.Use(logger.New())
 
-	app.Use(middleware.InitSessionMiddleware().Middleware)
-
 	config.ConnectDB(os.Getenv("MONGO_URI"))
 	models.InitModels("peersEatDB")
 	appModule := modules.InitApp()
+
+	app.Use(appModule.AuthMiddleware.Sessions)
+
 	appModule.Peer.Service.InitPeer()
 
 	routes.Register(app, appModule)
