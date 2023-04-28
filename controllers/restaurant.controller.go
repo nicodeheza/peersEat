@@ -13,6 +13,7 @@ type RestaurantController struct {
 
 type RestaurantControllerI interface {
 	UpdatePassword(c *fiber.Ctx) error
+	RetuneOk(c *fiber.Ctx) error
 }
 
 func NewRestaurantController(service services.RestaurantServiceI) *RestaurantController {
@@ -34,5 +35,9 @@ func (r *RestaurantController) UpdatePassword(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"message": err.Error()})
 	}
 
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{"message": "success"})
+}
+
+func (r *RestaurantController) RetuneOk(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{"message": "success"})
 }

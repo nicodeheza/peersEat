@@ -18,6 +18,7 @@ type AuthMiddleware struct {
 
 type AuthMiddlewareI interface {
 	Sessions(c *fiber.Ctx) error
+	Logout(c *fiber.Ctx) error
 	Authenticate(c *fiber.Ctx) error
 	Protect(c *fiber.Ctx) error
 	OnlyPeerOwner(c *fiber.Ctx) error
@@ -45,6 +46,18 @@ func (a *AuthMiddleware) Sessions(c *fiber.Ctx) error {
 	id := sess.Get("_id")
 
 	c.Locals("restaurantId", fmt.Sprintf("%v", id))
+	return c.Next()
+}
+
+func (a *AuthMiddleware) Logout(c *fiber.Ctx) error {
+	sess, err := a.store.Get(c)
+	if err != nil {
+		c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"message": err.Error()})
+	}
+	if err := sess.Destroy(); err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"message": err.Error()})
+	}
+
 	return c.Next()
 }
 
