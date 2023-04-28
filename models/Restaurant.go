@@ -23,6 +23,7 @@ type Restaurant struct {
 	Country           string             `validate:"required"`
 	Coord             GeoCoords          `validate:"-"`
 	IsConnected       bool               `bson:"isConnected,omitempty" json:"isConnected,omitempty"`
+	ImageUrl          string             `bson:"imageUrl,omitempty" json:"imageUrl,omitempty"`
 	Menu              Menu               `bson:"menu,omitempty" json:"menu,omitempty"`
 	OpenTime          string             `bson:"openTime,omitempty" json:"openTime,omitempty"`
 	CloseTime         string             `bson:"closeTime,omitempty" json:"closeTime,omitempty"`

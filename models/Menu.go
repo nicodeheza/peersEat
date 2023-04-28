@@ -10,6 +10,7 @@ type Dish struct {
 	Name        string
 	Description string
 	Price       float32
+	ImageUrl    string
 	Options     []DishOptions `bson:"options,omitempty" json:"options,omitempty"`
 }
 
