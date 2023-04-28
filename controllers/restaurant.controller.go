@@ -30,7 +30,7 @@ func (r *RestaurantController) UpdatePassword(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"message": err.Error()})
 	}
-	err = r.Service.UpdateRestaurantPassword(id, body.NewPassword)
+	err = r.Service.UpdateRestaurantUsernameAndPassword(id, body.NewPassword, body.NewUsername)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"message": err.Error()})
 	}

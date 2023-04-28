@@ -1,6 +1,8 @@
 package services
 
 import (
+	"errors"
+
 	"github.com/nicodeheza/peersEat/models"
 	"github.com/nicodeheza/peersEat/repositories"
 	"github.com/nicodeheza/peersEat/services/geo"
@@ -17,7 +19,7 @@ type RestaurantService struct {
 type RestaurantServiceI interface {
 	CompleteRestaurantInitialData(newRestaurant *models.Restaurant) (string, error)
 	AddNewRestaurant(newRestaurant models.Restaurant) (primitive.ObjectID, error)
-	UpdateRestaurantPassword(id primitive.ObjectID, newPassword string) error
+	UpdateRestaurantUsernameAndPassword(id primitive.ObjectID, newPassword string, newUserNames string) error
 	Authenticate(password, userName string) (bool, string, error)
 }
 
@@ -58,12 +60,12 @@ func (r *RestaurantService) AddNewRestaurant(newRestaurant models.Restaurant) (p
 	return id, nil
 }
 
-func (r *RestaurantService) UpdateRestaurantPassword(id primitive.ObjectID, newPassword string) error {
+func (r *RestaurantService) UpdateRestaurantUsernameAndPassword(id primitive.ObjectID, newPassword string, newUserNames string) error {
 	hash, err := r.authHelpers.HashPasswords(newPassword)
 	if err != nil {
 		return err
 	}
-	return r.repo.Update(id, map[string]interface{}{"password": hash})
+	return r.repo.Update(id, map[string]interface{}{"password": hash, "userName": newUserNames, "isFinalPassword": true})
 }
 
 func (r *RestaurantService) Authenticate(password, userName string) (bool, string, error) {
@@ -71,8 +73,13 @@ func (r *RestaurantService) Authenticate(password, userName string) (bool, strin
 	if err != nil {
 		return false, "", err
 	}
+	if !restaurant.IsFinalPassword {
+		return false, "", errors.New("Update your username and password before login")
+	}
 	res := r.authHelpers.CheckPassword(password, restaurant.Password)
 	id := restaurant.Id.Hex()
 
 	return res, id, nil
 }
+
+func (r *RestaurantService) UpdateData()

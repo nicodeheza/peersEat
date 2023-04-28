@@ -34,10 +34,24 @@ type PeerHaveRestaurantResp struct {
 
 type UpdateRestaurantPassword struct {
 	NewPassword string
+	NewUsername string
 	Id          string
 }
 
 type AuthReq struct {
 	Password string
 	UserName string
+}
+
+type RestaurantData struct {
+	Name              string
+	ImageUrl          string
+	OpenTime          string
+	CloseTime         string
+	Phone             string
+	DeliveryCost      float32
+	IsDeliveryFixCost bool
+	MinDeliveryTime   uint
+	MaxDeliveryTime   uint
+	DeliveryRadius    float64
 }
