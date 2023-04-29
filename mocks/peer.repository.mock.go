@@ -117,3 +117,11 @@ func (p *PeerRepositoryMock) FindUrlsByIds(ids []primitive.ObjectID) ([]string, 
 
 	return []string{"http://test1.com", "http://test2.com"}, nil
 }
+
+func (p PeerRepositoryMock) GetManyByIds(ids []primitive.ObjectID) ([]models.Peer, error) {
+
+	return nil, nil
+}
+func (p *PeerRepositoryMock) FindMany(query map[string]interface{}) ([]models.Peer, error) {
+	return nil, nil
+}

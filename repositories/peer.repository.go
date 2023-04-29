@@ -23,6 +23,8 @@ type PeerRepositoryI interface {
 	GetAllUrls(excludes []string) ([]string, error)
 	InsertMany(peers []models.Peer) (ids []primitive.ObjectID, err error)
 	FindUrlsByIds(ids []primitive.ObjectID) ([]string, error)
+	GetManyByIds(ids []primitive.ObjectID) ([]models.Peer, error)
+	FindMany(query map[string]interface{}) ([]models.Peer, error)
 }
 
 type PeerRepository struct {
@@ -158,7 +160,7 @@ func (p *PeerRepository) FindUrlsByIds(ids []primitive.ObjectID) ([]string, erro
 
 	cursor, err := p.coll.Find(context.Background(), filter)
 	if err != nil {
-		return []string{}, err
+		return nil, err
 	}
 
 	var result []string
@@ -170,5 +172,45 @@ func (p *PeerRepository) FindUrlsByIds(ids []primitive.ObjectID) ([]string, erro
 		result = append(result, peer.Url)
 	}
 
+	return result, nil
+}
+
+func (p *PeerRepository) GetManyByIds(ids []primitive.ObjectID) ([]models.Peer, error) {
+	filter := bson.D{{Key: "_id", Value: bson.M{"$in": ids}}}
+
+	cursor, err := p.coll.Find(context.Background(), filter)
+	if err != nil {
+		return nil, err
+	}
+
+	var result []models.Peer
+	for cursor.Next(context.Background()) {
+		var peer models.Peer
+		if err := cursor.Decode(&peer); err != nil {
+			return result, err
+		}
+		result = append(result, peer)
+	}
+	return result, nil
+}
+
+func (p *PeerRepository) FindMany(query map[string]interface{}) ([]models.Peer, error) {
+	filter := bson.D{}
+	for k, v := range query {
+		filter = append(filter, bson.E{Key: k, Value: v})
+	}
+	cursor, err := p.coll.Find(context.Background(), filter)
+	if err != nil {
+		return nil, err
+	}
+
+	var result []models.Peer
+	for cursor.Next(context.Background()) {
+		var peer models.Peer
+		if err := cursor.Decode(&peer); err != nil {
+			return result, err
+		}
+		result = append(result, peer)
+	}
 	return result, nil
 }

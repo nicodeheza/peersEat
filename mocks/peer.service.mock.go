@@ -145,3 +145,7 @@ func (p *PeerServiceMock) PeerHaveRestaurant(peerUrl string, restaurantQuery map
 		Err:  nil,
 	}
 }
+
+func (p *PeerServiceMock) GetInDeliveryAreaPeers(peer models.Peer) ([]models.Peer, error) {
+	return nil, nil
+}

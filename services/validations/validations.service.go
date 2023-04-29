@@ -3,6 +3,7 @@ package validations
 import (
 	"github.com/go-playground/validator/v10"
 	"github.com/nicodeheza/peersEat/models"
+	"github.com/nicodeheza/peersEat/types"
 )
 
 type Validate struct {
@@ -45,5 +46,10 @@ func (v *Validate) ValidatePeer(peer models.Peer) []*ErrorResponse {
 
 func (v *Validate) ValidateRestaurant(restaurant models.Restaurant) []*ErrorResponse {
 	err := v.validate.Struct(restaurant)
+	return v.getErrors(err)
+}
+
+func (v *Validate) ValidateRestaurantData(data types.RestaurantData) []*ErrorResponse {
+	err := v.validate.Struct(data)
 	return v.getErrors(err)
 }

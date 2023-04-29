@@ -6,6 +6,7 @@ import (
 	"github.com/nicodeheza/peersEat/models"
 	"github.com/nicodeheza/peersEat/repositories"
 	"github.com/nicodeheza/peersEat/services/geo"
+	"github.com/nicodeheza/peersEat/types"
 	"github.com/nicodeheza/peersEat/utils"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
@@ -82,4 +83,29 @@ func (r *RestaurantService) Authenticate(password, userName string) (bool, strin
 	return res, id, nil
 }
 
-func (r *RestaurantService) UpdateData()
+func (r *RestaurantService) UpdateData(data types.RestaurantData) error {
+	updates := make(map[string]interface{})
+	updates["name"] = data.Name
+	updates["ImageUrl"] = data.ImageUrl
+	updates["openTime"] = data.OpenTime
+	updates["closeTime"] = data.CloseTime
+	updates["phone"] = data.Phone
+	updates["deliveryCost"] = data.DeliveryCost
+	updates["isDeliveryFixCost"] = data.IsDeliveryFixCost
+	updates["minDeliveryTime"] = data.MinDeliveryTime
+	updates["maxDeliveryTime"] = data.MaxDeliveryTime
+	updates["deliveryRadius"] = data.DeliveryRadius
+
+	id, err := primitive.ObjectIDFromHex(data.Id)
+	if err != nil {
+		return err
+	}
+	err = r.repo.Update(id, updates)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// update menu

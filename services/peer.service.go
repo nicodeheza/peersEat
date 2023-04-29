@@ -31,6 +31,7 @@ type PeerServiceI interface {
 	GetPeersUrlById(ids []primitive.ObjectID) ([]string, error)
 	HaveRestaurant(restaurantQuery map[string]interface{}) (bool, error)
 	PeerHaveRestaurant(peerUrl string, restaurantQuery map[string]interface{}, c chan<- types.PeerHaveRestaurantResp, wg *sync.WaitGroup)
+	GetInDeliveryAreaPeers(peer models.Peer) ([]models.Peer, error)
 }
 
 type PeerService struct {
@@ -275,3 +276,70 @@ func (p *PeerService) PeerHaveRestaurant(peerUrl string, restaurantQuery map[str
 	c <- types.PeerHaveRestaurantResp{Resp: data.Result, Err: nil}
 	return
 }
+
+func (p *PeerService) GetNewDeliveryArea(peerCenter, restaurantCoord models.GeoCoords, restaurantDeliveryRadius float64) float64 {
+
+	dist := p.geo.GetCoordDistance(peerCenter, restaurantCoord)
+
+	return dist + restaurantDeliveryRadius
+}
+
+func (p *PeerService) GetInDeliveryAreaPeers(peer models.Peer) ([]models.Peer, error) {
+	return p.repo.GetManyByIds(peer.InDeliveryAreaPeers)
+}
+
+func (p *PeerService) UpdateDeliveryArea(peer models.Peer, newDeliveryRadius float64) error {
+	oldRadius := peer.DeliveryRadius
+	peer.DeliveryRadius = newDeliveryRadius
+	err := p.repo.Update(peer, []string{"deliveryRadius"})
+	if err != nil {
+		return err
+	}
+
+	peersToCheck := []models.Peer{}
+	canRemove := false
+	if oldRadius > newDeliveryRadius {
+		peers, err := p.GetInDeliveryAreaPeers(peer)
+		if err != nil {
+			return err
+		}
+		canRemove = true
+		peersToCheck = peers
+
+	} else {
+		peers, err := p.repo.FindMany(map[string]interface{}{
+			"city":    peer.City,
+			"country": peer.Country,
+		})
+		if err != nil {
+			return err
+		}
+		peersToCheck = peers
+	}
+
+	newInAreaPeers := []models.Peer{}
+	newInAreaPeersIds := []primitive.ObjectID{}
+	peersRemoved := []models.Peer{}
+
+	// recalculate in area
+	for _, foragePeer := range peersToCheck {
+		if p.geo.IsInDeliveryArea(peer, foragePeer) {
+			newInAreaPeers = append(newInAreaPeers, foragePeer)
+			newInAreaPeersIds = append(newInAreaPeersIds, foragePeer.Id)
+		} else if canRemove {
+			peersRemoved = append(peersRemoved, foragePeer)
+		}
+	}
+	// save changes
+	peer.InDeliveryAreaPeers = newInAreaPeersIds
+	err = p.repo.Update(peer, []string{"InDeliveryAreaPeers"})
+	if err != nil {
+		return err
+	}
+	// send update request (TODO)
+	// check refactor
+
+	return nil
+}
+
+// update other peer delivery area

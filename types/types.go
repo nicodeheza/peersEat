@@ -44,14 +44,15 @@ type AuthReq struct {
 }
 
 type RestaurantData struct {
-	Name              string
-	ImageUrl          string
-	OpenTime          string
-	CloseTime         string
-	Phone             string
-	DeliveryCost      float32
-	IsDeliveryFixCost bool
-	MinDeliveryTime   uint
-	MaxDeliveryTime   uint
-	DeliveryRadius    float64
+	Id                string  `validate:"required"`
+	Name              string  `validate:"required"`
+	ImageUrl          string  `validate:"required,url"`
+	OpenTime          string  `validate:"required,dateTime=3:04PM"`
+	CloseTime         string  `validate:"required,dateTime=3:04PM"`
+	Phone             string  `validate:"required,e164"`
+	DeliveryCost      float32 `validate:"required,gte=0"`
+	IsDeliveryFixCost bool    `validate:"required"`
+	MinDeliveryTime   uint    `validate:"required,gte=0"`
+	MaxDeliveryTime   uint    `validate:"required,gte=0"`
+	DeliveryRadius    float64 `validate:"required,gte=0"`
 }
