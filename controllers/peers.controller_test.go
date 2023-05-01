@@ -31,7 +31,8 @@ func initTest() (*PeerController, *mocks.PeerServiceMock, *mocks.RestaurantServi
 	validate := validations.NewValidator(validator.New())
 	restaurantService := mocks.NewRestaurantServiceMock()
 	geo := mocks.NewGeo()
-	peerController := NewPeerController(service, validate, restaurantService, geo)
+	eventLoop := mocks.NewEventLoopMock()
+	peerController := NewPeerController(service, validate, restaurantService, geo, eventLoop)
 	app := fiber.New()
 
 	return peerController, service, restaurantService, app

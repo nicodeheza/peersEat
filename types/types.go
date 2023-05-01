@@ -56,3 +56,9 @@ type RestaurantData struct {
 	MaxDeliveryTime   uint    `validate:"required,gte=0"`
 	DeliveryRadius    float64 `validate:"required,gte=0"`
 }
+
+type Event struct {
+	Name    string      `validate:"required"`
+	Payload interface{} `validate:"required"`
+	SendTo  []string
+}

@@ -12,6 +12,7 @@ type Validate struct {
 type ValidateI interface {
 	ValidatePeer(peer models.Peer) []*ErrorResponse
 	ValidateRestaurant(restaurant models.Restaurant) []*ErrorResponse
+	ValidateEvent(event types.Event) []*ErrorResponse
 }
 
 func NewValidator(validate *validator.Validate) *Validate {
@@ -51,5 +52,10 @@ func (v *Validate) ValidateRestaurant(restaurant models.Restaurant) []*ErrorResp
 
 func (v *Validate) ValidateRestaurantData(data types.RestaurantData) []*ErrorResponse {
 	err := v.validate.Struct(data)
+	return v.getErrors(err)
+}
+
+func (v *Validate) ValidateEvent(event types.Event) []*ErrorResponse {
+	err := v.validate.Struct(event)
 	return v.getErrors(err)
 }

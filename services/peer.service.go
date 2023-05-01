@@ -297,15 +297,13 @@ func (p *PeerService) UpdateDeliveryArea(peer models.Peer, newDeliveryRadius flo
 	}
 
 	peersToCheck := []models.Peer{}
-	canRemove := false
+
 	if oldRadius > newDeliveryRadius {
 		peers, err := p.GetInDeliveryAreaPeers(peer)
 		if err != nil {
 			return err
 		}
-		canRemove = true
 		peersToCheck = peers
-
 	} else {
 		peers, err := p.repo.FindMany(map[string]interface{}{
 			"city":    peer.City,
@@ -317,17 +315,12 @@ func (p *PeerService) UpdateDeliveryArea(peer models.Peer, newDeliveryRadius flo
 		peersToCheck = peers
 	}
 
-	newInAreaPeers := []models.Peer{}
 	newInAreaPeersIds := []primitive.ObjectID{}
-	peersRemoved := []models.Peer{}
 
 	// recalculate in area
 	for _, foragePeer := range peersToCheck {
 		if p.geo.IsInDeliveryArea(peer, foragePeer) {
-			newInAreaPeers = append(newInAreaPeers, foragePeer)
 			newInAreaPeersIds = append(newInAreaPeersIds, foragePeer.Id)
-		} else if canRemove {
-			peersRemoved = append(peersRemoved, foragePeer)
 		}
 	}
 	// save changes
@@ -336,7 +329,7 @@ func (p *PeerService) UpdateDeliveryArea(peer models.Peer, newDeliveryRadius flo
 	if err != nil {
 		return err
 	}
-	// send update request (TODO)
+	// send update request to all peers? (TODO)
 	// check refactor
 
 	return nil

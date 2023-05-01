@@ -5,6 +5,7 @@ import (
 	"sync"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/nicodeheza/peersEat/events"
 	"github.com/nicodeheza/peersEat/models"
 	"github.com/nicodeheza/peersEat/services"
 	"github.com/nicodeheza/peersEat/services/geo"
@@ -17,6 +18,7 @@ type PeerControllerI interface {
 	SendAllPeers(c *fiber.Ctx) error
 	HaveRestaurant(c *fiber.Ctx) error
 	AddNewRestaurant(c *fiber.Ctx) error
+	EventReceiver(c *fiber.Ctx) error
 }
 
 type PeerController struct {
@@ -24,15 +26,30 @@ type PeerController struct {
 	validate    validations.ValidateI
 	restaurants services.RestaurantServiceI
 	geo         geo.GeoServiceI
+	events      events.EventLoopI
 }
 
-func NewPeerController(service services.PeerServiceI, validate validations.ValidateI, restaurants services.RestaurantServiceI, geo geo.GeoServiceI) *PeerController {
-	return &PeerController{service, validate, restaurants, geo}
+func NewPeerController(service services.PeerServiceI, validate validations.ValidateI, restaurants services.RestaurantServiceI, geo geo.GeoServiceI, events events.EventLoopI) *PeerController {
+	return &PeerController{service, validate, restaurants, geo, events}
 }
 
 type peerPresentationBody struct {
 	NewPeer models.Peer
 	SendTo  []string
+}
+
+func (p *PeerController) EventReceiver(c *fiber.Ctx) error {
+	body := new(types.Event)
+	if err := c.BodyParser(&body); err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"message": err.Error()})
+	}
+	errors := p.validate.ValidateEvent(*body)
+	if errors != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(errors)
+	}
+
+	p.events.Enqueue(*body)
+	return c.SendStatus(fiber.StatusOK)
 }
 
 func (p *PeerController) PeerPresentation(c *fiber.Ctx) error {
