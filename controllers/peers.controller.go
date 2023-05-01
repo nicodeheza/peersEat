@@ -14,7 +14,6 @@ import (
 )
 
 type PeerControllerI interface {
-	PeerPresentation(c *fiber.Ctx) error
 	SendAllPeers(c *fiber.Ctx) error
 	HaveRestaurant(c *fiber.Ctx) error
 	AddNewRestaurant(c *fiber.Ctx) error
@@ -33,11 +32,6 @@ func NewPeerController(service services.PeerServiceI, validate validations.Valid
 	return &PeerController{service, validate, restaurants, geo, events}
 }
 
-type peerPresentationBody struct {
-	NewPeer models.Peer
-	SendTo  []string
-}
-
 func (p *PeerController) EventReceiver(c *fiber.Ctx) error {
 	body := new(types.Event)
 	if err := c.BodyParser(&body); err != nil {
@@ -49,52 +43,6 @@ func (p *PeerController) EventReceiver(c *fiber.Ctx) error {
 	}
 
 	p.events.Enqueue(*body)
-	return c.SendStatus(fiber.StatusOK)
-}
-
-func (p *PeerController) PeerPresentation(c *fiber.Ctx) error {
-	body := new(types.PeerPresentationBody)
-	if err := c.BodyParser(&body); err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"message": err.Error()})
-	}
-
-	newPeer := body.NewPeer
-
-	errors := p.validate.ValidatePeer(newPeer)
-	if errors != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(errors)
-	}
-
-	p.service.AddNewPeer(newPeer)
-
-	if body.SendTo != nil {
-		sendMap := make(map[string][]string)
-		p.service.GetSendMap(body.SendTo, sendMap)
-
-		ch := make(chan error)
-		var wg sync.WaitGroup
-
-		for sendUrl, urls := range sendMap {
-			wg.Add(1)
-			body := types.PeerPresentationBody{
-				NewPeer: newPeer,
-				SendTo:  urls,
-			}
-			go p.service.SendNewPeer(body, sendUrl, ch, &wg)
-		}
-
-		go func() {
-			wg.Wait()
-			close(ch)
-		}()
-
-		for err := range ch {
-			if err != nil {
-				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"message": err.Error()})
-			}
-		}
-	}
-
 	return c.SendStatus(fiber.StatusOK)
 }
 

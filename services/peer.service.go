@@ -3,7 +3,6 @@ package services
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -13,6 +12,7 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/nicodeheza/peersEat/events"
 	"github.com/nicodeheza/peersEat/models"
 	"github.com/nicodeheza/peersEat/repositories"
 	"github.com/nicodeheza/peersEat/services/geo"
@@ -22,10 +22,6 @@ import (
 
 type PeerServiceI interface {
 	InitPeer()
-	AddNewPeer(newPeer models.Peer) error
-	GetSendMap(urls []string, sendMap map[string][]string)
-	GetNewSendMap(excludes []string, sendMap map[string][]string) error
-	SendNewPeer(body types.PeerPresentationBody, peerUrl string, ch chan<- error, wg *sync.WaitGroup)
 	AllPeersToSend(excludeUrls []string) ([]models.Peer, error)
 	GetLocalPeer() (models.Peer, error)
 	GetPeersUrlById(ids []primitive.ObjectID) ([]string, error)
@@ -89,24 +85,13 @@ func (p *PeerService) InitPeer() {
 			log.Fatal("fail to get all peers")
 		}
 
-		bodyMap := map[string]interface{}{
-			"newPeer": map[string]interface{}{
-				"url": selfPeer.Url,
-				"center": map[string]interface{}{
-					"long": selfPeer.Center.Long,
-					"lat":  selfPeer.Center.Lat,
-				},
-				"city":    selfPeer.City,
-				"Country": selfPeer.Country,
-			},
-			"sendTo": sendTo,
-		}
+		event := events.NewAddPeerEvent(selfPeer, sendTo)
 
-		postBody, err := json.Marshal(bodyMap)
+		postBody, err := json.Marshal(event)
 		if err != nil {
 			log.Fatal("Marshal error")
 		}
-		resp, err = http.Post(fmt.Sprintf("%s/peer/present", initialPeer),
+		resp, err = http.Post(fmt.Sprintf("%s/peer/event", initialPeer),
 			"application/json", bytes.NewBuffer(postBody))
 		if err != nil || resp.StatusCode != 200 {
 			fmt.Println(err)
@@ -115,109 +100,6 @@ func (p *PeerService) InitPeer() {
 		}
 
 	}
-}
-
-func (p *PeerService) AddNewPeer(newPeer models.Peer) error {
-	id, err := p.repo.Insert(newPeer)
-	if err != nil {
-		return err
-	}
-
-	selfPeer, err := p.repo.GetSelf()
-	if err != nil {
-		return err
-	}
-
-	if newPeer.Country != selfPeer.Country || newPeer.City != selfPeer.City {
-		return nil
-	}
-
-	// do it concurrent?
-	updatedFields := []string{}
-	if p.geo.AreInfluenceAreasOverlaying(selfPeer, newPeer) {
-		selfPeer.InAreaPeers = append(selfPeer.InAreaPeers, id)
-		updatedFields = append(updatedFields, "InAreaPeers")
-	}
-
-	if p.geo.IsInDeliveryArea(selfPeer, newPeer) {
-		selfPeer.InDeliveryAreaPeers = append(selfPeer.InDeliveryAreaPeers, id)
-		updatedFields = append(updatedFields, "InDeliveryAreaPeers")
-	}
-
-	if len(updatedFields) > 0 {
-		err := p.repo.Update(selfPeer, updatedFields)
-
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-func (p *PeerService) GetSendMap(urls []string, sendMap map[string][]string) {
-	if len(urls) == 0 {
-		return
-	}
-	if len(urls) == 1 {
-		sendMap[urls[0]] = nil
-		return
-	}
-	cutIndex := int(len(urls) / 2)
-	list1 := urls[0:cutIndex]
-	list2 := urls[cutIndex:]
-
-	sendMap[list1[0]] = list1[1:]
-	sendMap[list2[0]] = list2[1:]
-}
-
-func (p *PeerService) GetNewSendMap(excludes []string, sendMap map[string][]string) error {
-	allUrls, err := p.repo.GetAllUrls(excludes)
-
-	if err != nil {
-		return err
-	}
-
-	p.GetSendMap(allUrls, sendMap)
-	return nil
-}
-
-func (p *PeerService) SendNewPeer(body types.PeerPresentationBody, peerUrl string, ch chan<- error, wg *sync.WaitGroup) {
-	defer wg.Done()
-	url := peerUrl + "/peer/present"
-
-	jsonBody, err := json.Marshal(body)
-
-	if err != nil {
-		ch <- err
-		return
-	}
-
-	resp, err := http.Post(url, "application/json", bytes.NewBuffer(jsonBody))
-
-	if err != nil {
-		ch <- err
-		return
-	}
-
-	if resp.StatusCode != 200 && len(body.SendTo) > 0 {
-		// add foul
-		fmt.Printf("failed to send new peer to %v, retraining with %v\n", peerUrl, body.SendTo[0])
-		newBody := types.PeerPresentationBody{
-			NewPeer: body.NewPeer,
-			SendTo:  body.SendTo[1:],
-		}
-		wg.Add(1)
-		p.SendNewPeer(newBody, body.SendTo[0], ch, wg)
-		return
-	}
-
-	if resp.StatusCode != 200 && len(body.SendTo) == 0 {
-		ch <- errors.New("Send to is empty")
-		return
-	}
-
-	ch <- nil
 }
 
 func (p *PeerService) AllPeersToSend(excludeUrls []string) ([]models.Peer, error) {
@@ -232,6 +114,7 @@ func (p *PeerService) GetPeersUrlById(ids []primitive.ObjectID) ([]string, error
 	return p.repo.FindUrlsByIds(ids)
 }
 
+// update
 func (p *PeerService) HaveRestaurant(restaurantQuery map[string]interface{}) (bool, error) {
 	_, err := p.restaurantRepo.FindOne(restaurantQuery)
 
