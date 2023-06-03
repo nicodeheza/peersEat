@@ -17,6 +17,7 @@ type EventLoop struct {
 type EventLoopI interface {
 	Enqueue(event types.Event)
 	Dequeue() types.Event
+	PropagateEvent(event types.Event)
 }
 
 var eventLoopInstance *EventLoop
@@ -57,6 +58,10 @@ func (e *EventLoop) queueLen() int {
 	return e.queue.Len()
 }
 
+func (e *EventLoop) PropagateEvent(event types.Event) {
+	e.handlers.PropagateEvent(event)
+}
+
 func (e *EventLoop) Loop() {
 	for {
 		time.Sleep(1 * time.Second)
@@ -68,8 +73,10 @@ func (e *EventLoop) Loop() {
 		event := e.Dequeue()
 
 		switch event.Name {
-		case "addPeer":
+		case ADD_NEW_PEER:
 			e.handlers.HandleAddPeer(event)
+		case DELIVERY_AREA_UPDATED:
+			e.handlers.PeerUpdatedDeliveryArea(event)
 		default:
 			continue
 		}
