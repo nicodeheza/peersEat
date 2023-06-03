@@ -336,3 +336,72 @@ func TestFindUrlsByIds(t *testing.T) {
 		}
 	}
 }
+
+func TestUpdateByUrl(t *testing.T) {
+	coll, server := initPeerDb()
+	defer server.Stop(context.Background())
+
+	peerRepository := PeerRepository{coll}
+
+	newPeer1 := models.Peer{
+		Url:            "http://tests1.com",
+		Center:         models.GeoCoords{Long: 11.0, Lat: 11.0},
+		City:           "test city1",
+		Country:        "test country1",
+		DeliveryRadius: 2,
+	}
+	newPeer2 := models.Peer{
+		Url:            "http://tests2.com",
+		Center:         models.GeoCoords{Long: 22.0, Lat: 22.0},
+		City:           "test city2",
+		Country:        "test country2",
+		DeliveryRadius: 3,
+	}
+	newPeer3 := models.Peer{
+		Url:            "http://tests3.com",
+		Center:         models.GeoCoords{Long: 33.0, Lat: 33.0},
+		City:           "test city3",
+		Country:        "test country3",
+		DeliveryRadius: 5,
+	}
+	newPeer4 := models.Peer{
+		Url:            "http://tests4.com",
+		Center:         models.GeoCoords{Long: 44.0, Lat: 44.0},
+		City:           "test city4",
+		Country:        "test country4",
+		DeliveryRadius: 6,
+	}
+
+	newPeers := []*models.Peer{&newPeer1, &newPeer2, &newPeer3, &newPeer4}
+
+	for _, peer := range newPeers {
+		res, err := peerRepository.Insert(*peer)
+		if err != nil {
+			t.Errorf("document insertion failed with err: %v", err)
+		}
+		peer.Id = res
+	}
+
+	peer, err := peerRepository.FindByUrlAndUpdate(newPeer3.Url, map[string]interface{}{
+		"delivery_radius": 100,
+	})
+	if err != nil {
+		t.Error(err.Error())
+	}
+
+	if peer.Url != newPeer3.Url {
+		t.Errorf("UpdateByUrl\n expected: %s\n got: %s",
+			newPeer3.Url, peer.Url)
+	}
+
+	if peer.City != newPeer3.City {
+		t.Errorf("UpdateByUrl\n expected: %s\n got: %s",
+			newPeer3.Url, peer.Url)
+	}
+
+	if peer.DeliveryRadius != 100 {
+		t.Errorf("UpdateByUrl\n expected: 100\n got: %f",
+			peer.DeliveryRadius)
+	}
+
+}

@@ -6,14 +6,18 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
 	"github.com/nicodeheza/peersEat/mocks"
+	"github.com/nicodeheza/peersEat/services/validations"
 	"github.com/nicodeheza/peersEat/types"
 )
 
 func initTestRestaurant() (*RestaurantController, *mocks.RestaurantServiceMock, *fiber.App) {
 	service := mocks.NewRestaurantServiceMock()
-	controller := NewRestaurantController(service)
+	peerServices := mocks.NewPeerServiceMock()
+	validations := validations.NewValidator(validator.New())
+	controller := NewRestaurantController(service, peerServices, validations)
 	app := fiber.New()
 
 	return controller, service, app
