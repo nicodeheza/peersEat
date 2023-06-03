@@ -15,3 +15,5 @@ func (e *EventLoopMock) Enqueue(event types.Event) {
 func (e *EventLoopMock) Dequeue() types.Event {
 	return types.Event{}
 }
+
+func (e *EventLoopMock) PropagateEvent(event types.Event) {}

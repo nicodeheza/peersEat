@@ -4,6 +4,7 @@ import (
 	"errors"
 
 	"github.com/nicodeheza/peersEat/models"
+	"github.com/nicodeheza/peersEat/types"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -41,4 +42,8 @@ func (r *RestaurantServiceMock) UpdateRestaurantUsernameAndPassword(id primitive
 func (r *RestaurantServiceMock) Authenticate(password, userName string) (bool, string, error) {
 
 	return true, "testId", nil
+}
+
+func (r *RestaurantServiceMock) UpdateData(data types.RestaurantData) (bool, models.GeoCoords, float64, error) {
+	return false, models.GeoCoords{}, 0, nil
 }

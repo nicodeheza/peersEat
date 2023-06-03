@@ -125,3 +125,7 @@ func (p PeerRepositoryMock) GetManyByIds(ids []primitive.ObjectID) ([]models.Pee
 func (p *PeerRepositoryMock) FindMany(query map[string]interface{}) ([]models.Peer, error) {
 	return nil, nil
 }
+
+func (p *PeerRepositoryMock) FindByUrlAndUpdate(url string, updates map[string]interface{}) (models.Peer, error) {
+	return models.Peer{}, nil
+}
