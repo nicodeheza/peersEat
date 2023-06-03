@@ -22,22 +22,30 @@ import (
 
 type PeerServiceI interface {
 	InitPeer()
+	EnqueueEvent(event types.Event)
 	AllPeersToSend(excludeUrls []string) ([]models.Peer, error)
 	GetLocalPeer() (models.Peer, error)
 	GetPeersUrlById(ids []primitive.ObjectID) ([]string, error)
 	HaveRestaurant(restaurantQuery map[string]interface{}) (bool, error)
 	PeerHaveRestaurant(peerUrl string, restaurantQuery map[string]interface{}, c chan<- types.PeerHaveRestaurantResp, wg *sync.WaitGroup)
 	GetInDeliveryAreaPeers(peer models.Peer) ([]models.Peer, error)
+	GetNewDeliveryArea(peerCenter, restaurantCoord models.GeoCoords, restaurantDeliveryRadius float64) float64
+	UpdateDeliveryArea(peer models.Peer, newDeliveryRadius float64) error
 }
 
 type PeerService struct {
 	repo           repositories.PeerRepositoryI
 	geo            geo.GeoServiceI
 	restaurantRepo repositories.RestaurantRepositoryI
+	events         events.EventLoopI
 }
 
-func NewPeerService(repository repositories.PeerRepositoryI, geo geo.GeoServiceI, restaurantRepo repositories.RestaurantRepositoryI) *PeerService {
-	return &PeerService{repository, geo, restaurantRepo}
+func NewPeerService(repository repositories.PeerRepositoryI, geo geo.GeoServiceI, restaurantRepo repositories.RestaurantRepositoryI, events events.EventLoopI) *PeerService {
+	return &PeerService{repository, geo, restaurantRepo, events}
+}
+
+func (p *PeerService) EnqueueEvent(event types.Event) {
+	p.events.Enqueue(event)
 }
 
 func (p *PeerService) InitPeer() {
@@ -200,22 +208,25 @@ func (p *PeerService) UpdateDeliveryArea(peer models.Peer, newDeliveryRadius flo
 
 	newInAreaPeersIds := []primitive.ObjectID{}
 
-	// recalculate in area
 	for _, foragePeer := range peersToCheck {
 		if p.geo.IsInDeliveryArea(peer, foragePeer) {
 			newInAreaPeersIds = append(newInAreaPeersIds, foragePeer.Id)
 		}
 	}
-	// save changes
+
 	peer.InDeliveryAreaPeers = newInAreaPeersIds
 	err = p.repo.Update(peer, []string{"InDeliveryAreaPeers"})
 	if err != nil {
 		return err
 	}
-	// send update request to all peers? (TODO)
-	// check refactor
+
+	urls, err := p.repo.GetAllUrls([]string{peer.Url})
+	if err != nil {
+		return err
+	}
+
+	event := events.NewUpdateDeliveryAreaEvent(peer, urls)
+	p.events.PropagateEvent(event)
 
 	return nil
 }
-
-// update other peer delivery area

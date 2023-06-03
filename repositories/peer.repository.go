@@ -12,6 +12,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type PeerRepositoryI interface {
@@ -25,6 +26,7 @@ type PeerRepositoryI interface {
 	FindUrlsByIds(ids []primitive.ObjectID) ([]string, error)
 	GetManyByIds(ids []primitive.ObjectID) ([]models.Peer, error)
 	FindMany(query map[string]interface{}) ([]models.Peer, error)
+	FindByUrlAndUpdate(url string, updates map[string]interface{}) (models.Peer, error)
 }
 
 type PeerRepository struct {
@@ -213,4 +215,26 @@ func (p *PeerRepository) FindMany(query map[string]interface{}) ([]models.Peer, 
 		result = append(result, peer)
 	}
 	return result, nil
+}
+
+func (p *PeerRepository) FindByUrlAndUpdate(url string, updates map[string]interface{}) (models.Peer, error) {
+	filter := bson.D{{Key: "url", Value: url}}
+
+	updateData := bson.D{}
+
+	for k, v := range updates {
+		updateData = append(updateData, bson.E{Key: k, Value: v})
+	}
+
+	update := bson.D{{Key: "$set", Value: updateData}}
+
+	result := new(models.Peer)
+
+	err := p.coll.FindOneAndUpdate(context.Background(), filter, update,
+		options.FindOneAndUpdate().SetReturnDocument(options.After)).Decode(&result)
+	if err != nil {
+		return models.Peer{}, err
+	}
+
+	return *result, nil
 }

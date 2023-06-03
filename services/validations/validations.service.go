@@ -13,6 +13,7 @@ type ValidateI interface {
 	ValidatePeer(peer models.Peer) []*ErrorResponse
 	ValidateRestaurant(restaurant models.Restaurant) []*ErrorResponse
 	ValidateEvent(event types.Event) []*ErrorResponse
+	ValidateRestaurantData(data types.RestaurantData) []*ErrorResponse
 }
 
 func NewValidator(validate *validator.Validate) *Validate {

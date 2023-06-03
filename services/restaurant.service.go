@@ -22,6 +22,7 @@ type RestaurantServiceI interface {
 	AddNewRestaurant(newRestaurant models.Restaurant) (primitive.ObjectID, error)
 	UpdateRestaurantUsernameAndPassword(id primitive.ObjectID, newPassword string, newUserNames string) error
 	Authenticate(password, userName string) (bool, string, error)
+	UpdateData(data types.RestaurantData) (bool, models.GeoCoords, float64, error)
 }
 
 func NewRestaurantService(repository repositories.RestaurantRepositoryI, authHelpers utils.AuthHelpersI, geo geo.GeoServiceI) *RestaurantService {
@@ -83,7 +84,14 @@ func (r *RestaurantService) Authenticate(password, userName string) (bool, strin
 	return res, id, nil
 }
 
-func (r *RestaurantService) UpdateData(data types.RestaurantData) error {
+func (r *RestaurantService) UpdateData(data types.RestaurantData) (bool, models.GeoCoords, float64, error) {
+
+	original, err := r.repo.FindOne(map[string]interface{}{"_id": data.Id})
+	if err != nil {
+		return false, models.GeoCoords{}, 0, err
+	}
+	deliveryRadUpdated := !(original.DeliveryRadius == data.DeliveryRadius)
+
 	updates := make(map[string]interface{})
 	updates["name"] = data.Name
 	updates["ImageUrl"] = data.ImageUrl
@@ -98,14 +106,14 @@ func (r *RestaurantService) UpdateData(data types.RestaurantData) error {
 
 	id, err := primitive.ObjectIDFromHex(data.Id)
 	if err != nil {
-		return err
+		return false, models.GeoCoords{}, 0, err
 	}
 	err = r.repo.Update(id, updates)
 	if err != nil {
-		return err
+		return false, models.GeoCoords{}, 0, err
 	}
 
-	return nil
+	return deliveryRadUpdated, original.Coord, data.DeliveryRadius, nil
 }
 
 // update menu

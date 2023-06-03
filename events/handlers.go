@@ -12,6 +12,7 @@ import (
 	"github.com/nicodeheza/peersEat/services/geo"
 	"github.com/nicodeheza/peersEat/services/validations"
 	"github.com/nicodeheza/peersEat/types"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type Handlers struct {
@@ -21,7 +22,9 @@ type Handlers struct {
 }
 
 type HandlersI interface {
+	PropagateEvent(event types.Event)
 	HandleAddPeer(event types.Event)
+	PeerUpdatedDeliveryArea(event types.Event)
 }
 
 func NewEventHandlers(
@@ -101,7 +104,7 @@ func (h *Handlers) PropagateEvent(event types.Event) {
 func (h *Handlers) HandleAddPeer(event types.Event) {
 	defer h.PropagateEvent(event)
 
-	if event.Name != "addPeer" {
+	if event.Name != ADD_NEW_PEER {
 		return
 	}
 
@@ -127,17 +130,83 @@ func (h *Handlers) HandleAddPeer(event types.Event) {
 	updatedFields := []string{}
 	if h.geo.AreInfluenceAreasOverlaying(selfPeer, newPeer) {
 		selfPeer.InAreaPeers = append(selfPeer.InAreaPeers, id)
-		updatedFields = append(updatedFields, "InAreaPeers")
+		updatedFields = append(updatedFields, "in_area_peers")
 	}
 
 	if h.geo.IsInDeliveryArea(selfPeer, newPeer) {
 		selfPeer.InDeliveryAreaPeers = append(selfPeer.InDeliveryAreaPeers, id)
-		updatedFields = append(updatedFields, "InDeliveryAreaPeers")
+		updatedFields = append(updatedFields, "in_area_delivery_peers")
 	}
 
 	if len(updatedFields) > 0 {
 		err := h.peerRepo.Update(selfPeer, updatedFields)
 
+		if err != nil {
+			log.Println(err.Error())
+			return
+		}
+	}
+
+}
+
+func (h *Handlers) PeerUpdatedDeliveryArea(event types.Event) {
+	defer h.PropagateEvent(event)
+
+	if event.Name != DELIVERY_AREA_UPDATED {
+		return
+	}
+
+	selfPeer, err := h.peerRepo.GetSelf()
+	if err != nil {
+		log.Println(err.Error())
+		return
+	}
+
+	sendPeer, ok := event.Payload.(models.Peer)
+	errors := h.validation.ValidatePeer(sendPeer)
+	if !ok || errors != nil {
+		log.Println("payload don't contains a peer")
+		return
+	}
+
+	peer, err := h.peerRepo.FindByUrlAndUpdate(sendPeer.Url, map[string]interface{}{
+		"delivery_radius": sendPeer.DeliveryRadius,
+	})
+	if err != nil {
+		log.Println(err.Error())
+		return
+	}
+
+	isInDeliveryAres := h.geo.IsInDeliveryArea(selfPeer, peer)
+
+	var isInDeliveryAreaSlice bool
+	for _, id := range selfPeer.InDeliveryAreaPeers {
+		if id == peer.Id {
+			isInDeliveryAreaSlice = true
+			break
+		}
+	}
+
+	var selfChanged bool
+
+	if isInDeliveryAres && !isInDeliveryAreaSlice {
+		selfPeer.InDeliveryAreaPeers = append(selfPeer.InDeliveryAreaPeers, peer.Id)
+		selfChanged = true
+	}
+	if !isInDeliveryAres && isInDeliveryAreaSlice {
+		newDeliverySlice := []primitive.ObjectID{}
+		for _, id := range selfPeer.InDeliveryAreaPeers {
+			if id != peer.Id {
+				newDeliverySlice = append(newDeliverySlice, id)
+			}
+		}
+
+		selfPeer.InDeliveryAreaPeers = newDeliverySlice
+		selfChanged = true
+	}
+
+	if selfChanged {
+		err = h.peerRepo.Update(selfPeer, []string{"in_area_delivery_peers"})
 		if err != nil {
 			log.Println(err.Error())
 			return

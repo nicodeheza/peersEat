@@ -5,7 +5,6 @@ import (
 	"sync"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/nicodeheza/peersEat/events"
 	"github.com/nicodeheza/peersEat/models"
 	"github.com/nicodeheza/peersEat/services"
 	"github.com/nicodeheza/peersEat/services/geo"
@@ -25,11 +24,10 @@ type PeerController struct {
 	validate    validations.ValidateI
 	restaurants services.RestaurantServiceI
 	geo         geo.GeoServiceI
-	events      events.EventLoopI
 }
 
-func NewPeerController(service services.PeerServiceI, validate validations.ValidateI, restaurants services.RestaurantServiceI, geo geo.GeoServiceI, events events.EventLoopI) *PeerController {
-	return &PeerController{service, validate, restaurants, geo, events}
+func NewPeerController(service services.PeerServiceI, validate validations.ValidateI, restaurants services.RestaurantServiceI, geo geo.GeoServiceI) *PeerController {
+	return &PeerController{service, validate, restaurants, geo}
 }
 
 func (p *PeerController) EventReceiver(c *fiber.Ctx) error {
@@ -42,7 +40,7 @@ func (p *PeerController) EventReceiver(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(errors)
 	}
 
-	p.events.Enqueue(*body)
+	p.service.EnqueueEvent(*body)
 	return c.SendStatus(fiber.StatusOK)
 }
 

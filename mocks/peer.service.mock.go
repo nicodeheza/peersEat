@@ -31,6 +31,8 @@ func (p *PeerServiceMock) InitPeer() {
 	return
 }
 
+func (p *PeerServiceMock) EnqueueEvent(event types.Event) {}
+
 func (p *PeerServiceMock) AllPeersToSend(excludeUrls []string) ([]models.Peer, error) {
 	p.Calls["AllPeersToSend"] = append(p.Calls["AllPeersToSend"], []interface{}{excludeUrls})
 
@@ -102,4 +104,12 @@ func (p *PeerServiceMock) PeerHaveRestaurant(peerUrl string, restaurantQuery map
 
 func (p *PeerServiceMock) GetInDeliveryAreaPeers(peer models.Peer) ([]models.Peer, error) {
 	return nil, nil
+}
+
+func (p *PeerServiceMock) GetNewDeliveryArea(peerCenter, restaurantCoord models.GeoCoords, restaurantDeliveryRadius float64) float64 {
+	return 0
+}
+
+func (p *PeerServiceMock) UpdateDeliveryArea(peer models.Peer, newDeliveryRadius float64) error {
+	return nil
 }
