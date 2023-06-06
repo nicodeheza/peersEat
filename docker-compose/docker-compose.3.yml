@@ -4,6 +4,7 @@ services:
     build: ..
     depends_on:
       - mongo3
+      - redis3
     ports:
       - "3003:3003"
     environment:
@@ -14,8 +15,14 @@ services:
       - COUNTRY=Argentina
       - MONGO_URI=mongodb://mongo3:27021/peersEatDB
       - INITIAL_PEER=http://peer1:3001
+      - REDIS_URI=redis://redis3:6383
   mongo3:
     image: mongo
     command: mongod --port 27021
     ports:
       - "27021:27021"
+  redis3:
+    image: redis
+    command: redis-server --port 6383
+    ports:
+      - "6383:6383"
