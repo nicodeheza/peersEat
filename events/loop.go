@@ -10,7 +10,7 @@ import (
 
 type EventLoop struct {
 	mutex    sync.Mutex
-	queue    list.List
+	queue    *list.List
 	handlers HandlersI
 }
 
@@ -26,7 +26,7 @@ var once sync.Once
 func InitEventLoop(handlers HandlersI) *EventLoop {
 	once.Do(func() {
 		queue := list.New()
-		eventLoop := EventLoop{queue: *queue, handlers: handlers}
+		eventLoop := EventLoop{queue: queue, handlers: handlers}
 		go eventLoop.Loop()
 		eventLoopInstance = &eventLoop
 	})
