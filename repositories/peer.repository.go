@@ -2,10 +2,10 @@ package repositories
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
-	"reflect"
 	"strings"
 
 	"github.com/nicodeheza/peersEat/models"
@@ -111,20 +111,25 @@ func (p *PeerRepository) Update(peer models.Peer, fields []string) error {
 	filter := bson.D{{Key: "_id", Value: peer.Id}}
 
 	updateData := bson.D{}
-	val := reflect.ValueOf(peer)
+	mapPeer := make(map[string]interface{})
+	peerBytes, err := json.Marshal(peer)
+	err = json.Unmarshal(peerBytes, &mapPeer)
+	if err != nil {
+		return err
+	}
 
 	for _, field := range fields {
-		f := reflect.Indirect(val).FieldByName(field)
-		if f == (reflect.Value{}) {
+		f := mapPeer[field]
+		if f == nil {
 			message := fmt.Sprintf("field %v not exist in peer struct", field)
 			return errors.New(message)
 		}
-		updateData = append(updateData, bson.E{Key: strings.ToLower(field), Value: f.Interface()})
+		updateData = append(updateData, bson.E{Key: strings.ToLower(field), Value: f})
 	}
 
 	update := bson.D{{Key: "$set", Value: updateData}}
 
-	_, err := p.coll.UpdateOne(context.Background(), filter, update)
+	_, err = p.coll.UpdateOne(context.Background(), filter, update)
 
 	if err != nil {
 		return err

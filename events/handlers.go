@@ -54,7 +54,6 @@ func (h *Handlers) createSendMap(urls []string, sendMap map[string][]string) {
 func (h *Handlers) sendEvent(peerUrl string, event types.Event, wg *sync.WaitGroup) {
 	defer wg.Done()
 	url := peerUrl + "/peer/event"
-
 	body, err := json.Marshal(event)
 
 	resp, err := http.Post(url, "application/json", bytes.NewBuffer(body))
@@ -114,9 +113,15 @@ func (h *Handlers) HandleAddPeer(event types.Event) {
 		return
 	}
 
-	newPeer, ok := event.Payload.(models.Peer)
+	newPeer := models.Peer{}
+	newPeerBytes, err := json.Marshal(event.Payload)
+	err = json.Unmarshal(newPeerBytes, &newPeer)
+	if err != nil {
+		log.Println(err.Error())
+		return
+	}
 	errors := h.validation.ValidatePeer(newPeer)
-	if !ok || errors != nil {
+	if errors != nil {
 		log.Println("payload don't contains a peer")
 		return
 	}
