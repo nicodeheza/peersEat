@@ -83,9 +83,41 @@ func (p *PeerService) InitPeer() {
 			log.Fatal("fail to decode")
 		}
 
-		_, err = p.repo.InsertMany(newPeers)
+		ids, err := p.repo.InsertMany(newPeers)
 		if err != nil {
 			log.Fatal("fail to inset new peers")
+		}
+
+		// to fix
+		updatedFields := []string{}
+		var addInInfluenceArea bool
+		var addInInDeliveryArea bool
+		for i, id := range ids {
+			if p.geo.AreInfluenceAreasOverlaying(selfPeer, newPeers[i]) {
+				selfPeer.InAreaPeers = append(selfPeer.InAreaPeers, id)
+				addInInfluenceArea = true
+			}
+
+			if p.geo.IsInDeliveryArea(selfPeer, newPeers[i]) {
+				selfPeer.InDeliveryAreaPeers = append(selfPeer.InDeliveryAreaPeers, id)
+				addInInDeliveryArea = true
+			}
+
+		}
+		if addInInfluenceArea {
+			updatedFields = append(updatedFields, "in_area_peers")
+		}
+		if addInInDeliveryArea {
+			updatedFields = append(updatedFields, "in_area_delivery_peers")
+		}
+
+		if len(updatedFields) > 0 {
+			err := p.repo.Update(selfPeer, updatedFields)
+
+			if err != nil {
+				log.Println(err.Error())
+				return
+			}
 		}
 
 		sendTo, err := p.repo.GetAllUrls([]string{selfPeer.Url, initialPeer})
